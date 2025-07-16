@@ -1,19 +1,75 @@
-import { getEventById, type Event } from '@/lib/data';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { getEventById, getUserById, updateUser, updateEvent, type Event, type User } from '@/lib/data';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, User, Tag, Ticket } from 'lucide-react';
+import { Calendar, Clock, User as UserIcon, Tag, Ticket, CheckCircle } from 'lucide-react';
 import EventAssistant from '@/components/event-assistant';
+import { useToast } from '@/components/ui/use-toast';
 
 export default function EventDetailPage({ params }: { params: { id: string } }) {
-  const event = getEventById(params.id);
+  const [event, setEvent] = useState<Event | undefined>(getEventById(params.id));
+  const [user, setUser] = useState<User | undefined>(getUserById('1'));
+  const [isRegistered, setIsRegistered] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (user && event) {
+      setIsRegistered(user.registeredEvents.includes(event.id));
+    }
+  }, [user, event]);
 
   if (!event) {
     notFound();
   }
+
+  const handleRegister = () => {
+    if (!user || !event) return;
+
+    let updatedUser: User;
+    let updatedEvent: Event;
+    let toastMessage: string;
+
+    if (isRegistered) {
+      // Unregister
+      updatedUser = {
+        ...user,
+        registeredEvents: user.registeredEvents.filter(id => id !== event.id),
+      };
+      updatedEvent = {
+        ...event,
+        registrations: event.registrations.filter(id => id !== user.id),
+      };
+      toastMessage = "You have successfully unregistered from this event.";
+    } else {
+      // Register
+      updatedUser = {
+        ...user,
+        registeredEvents: [...user.registeredEvents, event.id],
+      };
+      updatedEvent = {
+        ...event,
+        registrations: [...event.registrations, user.id],
+      };
+      toastMessage = "You have successfully registered for this event!";
+    }
+
+    updateUser(updatedUser);
+    updateEvent(updatedEvent);
+    setUser(updatedUser);
+    setEvent(updatedEvent);
+    setIsRegistered(!isRegistered);
+
+    toast({
+      title: "Success",
+      description: toastMessage,
+    });
+  };
 
   return (
     <div className="container py-12 md:py-16">
@@ -45,7 +101,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-start gap-3">
-                <User className="h-5 w-5 mt-0.5 text-primary" />
+                <UserIcon className="h-5 w-5 mt-0.5 text-primary" />
                 <div>
                   <h3 className="font-semibold">Speaker</h3>
                   <p className="text-muted-foreground">{event.speaker}</p>
@@ -72,10 +128,20 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                   <p className="text-muted-foreground">{event.topic}</p>
                 </div>
               </div>
-              <Button size="lg" className="w-full mt-4">
-                <Ticket className="mr-2 h-5 w-5" />
-                Register for this Event
+              <Button size="lg" className="w-full mt-4" onClick={handleRegister} disabled={!user}>
+                {isRegistered ? (
+                  <>
+                    <CheckCircle className="mr-2 h-5 w-5" />
+                    You are registered
+                  </>
+                ) : (
+                  <>
+                    <Ticket className="mr-2 h-5 w-5" />
+                    Register for this Event
+                  </>
+                )}
               </Button>
+               {!user && <p className="text-sm text-center text-muted-foreground">Please log in to register.</p>}
             </CardContent>
           </Card>
           

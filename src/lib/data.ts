@@ -21,14 +21,14 @@ export type User = {
   registeredEvents: string[];
 };
 
-const users: User[] = [
+let users: User[] = [
   { id: '1', name: 'Alice Johnson', email: 'alice@example.com', role: 'user', registeredEvents: ['1', '3'] },
   { id: '2', name: 'Bob Williams', email: 'bob@example.com', role: 'user', registeredEvents: ['2'] },
   { id: '3', name: 'Charlie Brown', email: 'charlie@example.com', role: 'admin', registeredEvents: ['1', '2', '3'] },
   { id: '4', name: 'Diana Prince', email: 'diana@example.com', role: 'user', registeredEvents: [] },
 ];
 
-const events: Event[] = [
+let events: Event[] = [
   {
     id: '1',
     title: 'Next.js 15 Deep Dive',
@@ -100,17 +100,31 @@ const events: Event[] = [
 ];
 
 export function getEvents(): Event[] {
-  return events.sort((a, b) => a.time.getTime() - b.time.getTime());
+  return [...events].sort((a, b) => a.time.getTime() - b.time.getTime());
 }
 
 export function getEventById(id: string): Event | undefined {
   return events.find((event) => event.id === id);
 }
 
+export function updateEvent(updatedEvent: Event): void {
+  const index = events.findIndex(event => event.id === updatedEvent.id);
+  if (index !== -1) {
+    events[index] = updatedEvent;
+  }
+}
+
 export function getUsers(): User[] {
-  return users;
+  return [...users];
 }
 
 export function getUserById(id: string): User | undefined {
   return users.find((user) => user.id === id);
+}
+
+export function updateUser(updatedUser: User): void {
+  const index = users.findIndex(user => user.id === updatedUser.id);
+  if (index !== -1) {
+    users[index] = updatedUser;
+  }
 }
