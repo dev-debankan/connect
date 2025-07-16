@@ -2,7 +2,7 @@
 'use client'
 
 import { useState } from 'react';
-import { getEvents, getUsers, type Event, type User, deleteEvent } from '@/lib/data';
+import { getEvents, getUsers, type Event, type User, deleteEvent, deleteUser, updateUser } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -39,6 +39,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -48,6 +55,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MoreHorizontal, PlusCircle, Users as UsersIcon, Calendar as CalendarIcon, Trash2, Pencil, LinkIcon, ImageIcon } from 'lucide-react';
 import { format } from 'date-fns';
 
+type DialogContext = 'eventDelete' | 'userDelete' | 'none';
+
 export default function AdminDashboardPage() {
   const [events, setEvents] = useState<Event[]>(getEvents());
   const [users, setUsers] = useState<User[]>(getUsers());
@@ -55,8 +64,16 @@ export default function AdminDashboardPage() {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [eventToView, setEventToView] = useState<Event | null>(null);
   const [isRegistrationsOpen, setIsRegistrationsOpen] = useState(false);
-  const [eventToDelete, setEventToDelete] = useState<Event | null>(null);
   
+  const [dialogContext, setDialogContext] = useState<DialogContext>('none');
+  const [eventToDelete, setEventToDelete] = useState<Event | null>(null);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  
+  const [isUserRoleDialogOpen, setIsUserRoleDialogOpen] = useState(false);
+  const [selectedUserForRoleChange, setSelectedUserForRoleChange] = useState<User | null>(null);
+  const [newRole, setNewRole] = useState<'user' | 'admin'>('user');
+
+
   const handleCreateEvent = () => {
     setSelectedEvent(null);
     setIsEventFormOpen(true);
@@ -72,22 +89,58 @@ export default function AdminDashboardPage() {
     setIsRegistrationsOpen(true);
   };
 
-  const handleDeleteClick = (event: Event) => {
+  const handleEventDeleteClick = (event: Event) => {
+    setDialogContext('eventDelete');
     setEventToDelete(event);
   };
   
-  const handleConfirmDelete = () => {
+  const handleConfirmEventDelete = () => {
     if (eventToDelete) {
       deleteEvent(eventToDelete.id);
       setEvents(getEvents());
       setEventToDelete(null);
+      setDialogContext('none');
+    }
+  };
+
+  const handleUserDeleteClick = (user: User) => {
+    setDialogContext('userDelete');
+    setUserToDelete(user);
+  };
+
+  const handleConfirmUserDelete = () => {
+    if (userToDelete) {
+      deleteUser(userToDelete.id);
+      setUsers(getUsers());
+      setEvents(getEvents()); // Refresh events in case registrations changed
+      setUserToDelete(null);
+      setDialogContext('none');
+    }
+  };
+
+  const handleEditRoleClick = (user: User) => {
+    setSelectedUserForRoleChange(user);
+    setNewRole(user.role);
+    setIsUserRoleDialogOpen(true);
+  };
+
+  const handleRoleChange = (value: 'user' | 'admin') => {
+    setNewRole(value);
+  };
+
+  const handleSaveRole = () => {
+    if (selectedUserForRoleChange) {
+      const updatedUser = { ...selectedUserForRoleChange, role: newRole };
+      updateUser(updatedUser);
+      setUsers(getUsers());
+      setIsUserRoleDialogOpen(false);
+      setSelectedUserForRoleChange(null);
     }
   };
 
   const getRegisteredUsers = (event: Event | null): User[] => {
     if (!event) return [];
-    const allUsers = getUsers();
-    return allUsers.filter(user => event.registrations.includes(user.id));
+    return getUsers().filter(user => event.registrations.includes(user.id));
   };
 
 
@@ -164,7 +217,7 @@ export default function AdminDashboardPage() {
                                   View Registrations
                                 </DropdownMenuItem>
                                 <AlertDialogTrigger asChild>
-                                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={() => handleDeleteClick(event)} className="text-destructive">
+                                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={() => handleEventDeleteClick(event)} className="text-destructive">
                                     <Trash2 className="mr-2 h-4 w-4" />
                                     Delete
                                   </DropdownMenuItem>
@@ -215,14 +268,16 @@ export default function AdminDashboardPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleEditRoleClick(user)}>
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Edit role
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive">
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete user
-                              </DropdownMenuItem>
+                               <AlertDialogTrigger asChild>
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={() => handleUserDeleteClick(user)} className="text-destructive">
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete user
+                                </DropdownMenuItem>
+                               </AlertDialogTrigger>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
@@ -236,19 +291,37 @@ export default function AdminDashboardPage() {
           </TabsContent>
         </Tabs>
 
-        <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the event
-                <span className="font-semibold"> {eventToDelete?.title}</span> and remove all registration data.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setEventToDelete(null)}>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleConfirmDelete}>Continue</AlertDialogAction>
-            </AlertDialogFooter>
+        {dialogContext === 'eventDelete' && (
+          <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the event
+                  <span className="font-semibold"> {eventToDelete?.title}</span> and remove all registration data.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setDialogContext('none')}>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleConfirmEventDelete}>Continue</AlertDialogAction>
+              </AlertDialogFooter>
           </AlertDialogContent>
+        )}
+
+        {dialogContext === 'userDelete' && (
+           <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the user
+                  <span className="font-semibold"> {userToDelete?.name}</span> and remove them from all events.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setDialogContext('none')}>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleConfirmUserDelete}>Continue</AlertDialogAction>
+              </AlertDialogFooter>
+          </AlertDialogContent>
+        )}
 
         <Dialog open={isRegistrationsOpen} onOpenChange={setIsRegistrationsOpen}>
           <DialogContent className="sm:max-w-md">
@@ -338,6 +411,38 @@ export default function AdminDashboardPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        
+        <Dialog open={isUserRoleDialogOpen} onOpenChange={setIsUserRoleDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="font-headline">Edit User Role</DialogTitle>
+              <DialogDescription>
+                Change the role for <span className="font-semibold">{selectedUserForRoleChange?.name}</span>.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="role-select" className="text-right">
+                  Role
+                </Label>
+                <Select value={newRole} onValueChange={handleRoleChange}>
+                  <SelectTrigger id="role-select" className="col-span-3">
+                    <SelectValue placeholder="Select a role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user">User</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsUserRoleDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleSaveRole}>Save Changes</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
       </div>
     </AlertDialog>
   );
