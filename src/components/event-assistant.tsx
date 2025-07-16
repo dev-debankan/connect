@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -14,6 +15,17 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
 }
+
+const GeminiLogo = () => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="h-6 w-6 text-primary"
+    >
+      <path d="M12 2L9.91 9.91L2 12L9.91 14.09L12 22L14.09 14.09L22 12L14.09 9.91L12 2Z" />
+    </svg>
+  );
 
 export default function EventAssistant() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -52,8 +64,8 @@ export default function EventAssistant() {
     <Card className="shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-headline">
-          <Bot className="text-primary" />
-          AI Event Assistant
+          <GeminiLogo />
+          <span>Event Assistant</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
