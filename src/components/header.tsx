@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Menu, Users } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -128,6 +128,12 @@ export default function Header() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[280px]">
+                <SheetHeader className="sr-only">
+                  <SheetTitle>Mobile Navigation Menu</SheetTitle>
+                  <SheetDescription>
+                    A list of navigation links for the GDG Connect Streamline application.
+                  </SheetDescription>
+                </SheetHeader>
                 <Link href="/" className="mr-6 flex items-center space-x-2 mb-6">
                   <Users className="h-6 w-6 text-primary" />
                   <span className="font-bold font-headline">GDG Connect</span>
