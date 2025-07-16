@@ -46,15 +46,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MoreHorizontal, PlusCircle, Users as UsersIcon, Calendar as CalendarIcon, Trash2, Pencil, LinkIcon, ImageIcon } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Users as UsersIcon, Calendar as CalendarIcon, Trash2, Pencil, LinkIcon, ImageIcon, ClockIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/components/ui/use-toast';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
 
 type DialogContext = 'eventDelete' | 'userDelete' | 'none';
 
@@ -65,6 +72,7 @@ export default function AdminDashboardPage() {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [eventToView, setEventToView] = useState<Event | null>(null);
   const [isRegistrationsOpen, setIsRegistrationsOpen] = useState(false);
+  const [eventDate, setEventDate] = useState<Date | undefined>(undefined);
   
   const [dialogContext, setDialogContext] = useState<DialogContext>('none');
   const [eventToDelete, setEventToDelete] = useState<Event | null>(null);
@@ -78,6 +86,16 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     refreshData();
   }, []);
+  
+  useEffect(() => {
+    if (isEventFormOpen && selectedEvent) {
+      setEventDate(new Date(selectedEvent.time));
+    } else if (isEventFormOpen && !selectedEvent) {
+      setEventDate(new Date());
+    } else {
+      setEventDate(undefined);
+    }
+  }, [isEventFormOpen, selectedEvent]);
 
   const refreshData = () => {
     setEvents(getEvents());
@@ -153,6 +171,12 @@ export default function AdminDashboardPage() {
   const handleEventSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    
+    const timeValue = formData.get('time') as string;
+    const [hours, minutes] = timeValue.split(':').map(Number);
+    const combinedDate = new Date(eventDate || new Date());
+    combinedDate.setHours(hours, minutes, 0, 0);
+
     const eventData = {
       title: formData.get('title') as string,
       speaker: formData.get('speaker') as string,
@@ -161,7 +185,7 @@ export default function AdminDashboardPage() {
       image: formData.get('imageUrl') as string || 'https://placehold.co/600x400.png',
       meetingLink: formData.get('meetingLink') as string,
       category: 'Webinar' as const, 
-      time: new Date(),
+      time: combinedDate,
     };
 
     if (selectedEvent) {
@@ -426,6 +450,39 @@ export default function AdminDashboardPage() {
                     <Label htmlFor="speaker" className="md:text-right">Speaker</Label>
                     <Input id="speaker" name="speaker" defaultValue={selectedEvent?.speaker} className="md:col-span-3" />
                   </div>
+                   <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
+                    <Label className="md:text-right">Date & Time</Label>
+                    <div className="md:col-span-3 grid grid-cols-2 gap-2">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "justify-start text-left font-normal",
+                                !eventDate && "text-muted-foreground"
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {eventDate ? format(eventDate, "PPP") : <span>Pick a date</span>}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0">
+                            <Calendar
+                              mode="single"
+                              selected={eventDate}
+                              onSelect={setEventDate}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <Input
+                          id="time"
+                          name="time"
+                          type="time"
+                          defaultValue={eventDate ? format(eventDate, 'HH:mm') : ''}
+                        />
+                    </div>
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
                     <Label htmlFor="topic" className="md:text-right">Topic</Label>
                     <Input id="topic" name="topic" defaultValue={selectedEvent?.topic} className="md:col-span-3" />
@@ -494,3 +551,5 @@ export default function AdminDashboardPage() {
     </AlertDialog>
   );
 }
+
+    
