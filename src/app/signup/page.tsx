@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Users, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { createUser } from "@/lib/data";
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -17,10 +18,23 @@ export default function SignupPage() {
   const { toast } = useToast();
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // In a real app, you'd create a user here.
-    // For now, we'll just show a success message and redirect.
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get("full-name") as string;
+    const email = formData.get("email") as string;
+
+    if (!name || !email) {
+      toast({
+        title: "Error",
+        description: "Please fill out all fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    createUser({ name, email });
+    
     toast({
       title: "Account Created!",
       description: "You have successfully created your account. Please log in.",
@@ -53,11 +67,11 @@ export default function SignupPage() {
                   <form onSubmit={handleSubmit} className="space-y-4">
                       <div className="grid gap-2">
                           <Label htmlFor="full-name">Full Name</Label>
-                          <Input id="full-name" placeholder="John Doe" required />
+                          <Input id="full-name" name="full-name" placeholder="John Doe" required />
                       </div>
                       <div className="grid gap-2">
                           <Label htmlFor="email">Email address</Label>
-                          <Input id="email" type="email" placeholder="m@example.com" required />
+                          <Input id="email" name="email" type="email" placeholder="m@example.com" required />
                       </div>
                       <div className="grid gap-2">
                           <Label htmlFor="password">Password</Label>

@@ -1,3 +1,4 @@
+
 import { subDays, addDays } from 'date-fns';
 
 export type Event = {
@@ -133,6 +134,30 @@ export function getUsers(): User[] {
 export function getUserById(id: string): User | undefined {
   return users.find((user) => user.id === id);
 }
+
+export function getUserByEmail(email: string): User | undefined {
+  return users.find((user) => user.email.toLowerCase() === email.toLowerCase());
+}
+
+export function createUser(userData: { name: string; email: string }): User {
+  const existingUser = getUserByEmail(userData.email);
+  if (existingUser) {
+    // In a real app, you'd throw an error or handle this case more gracefully
+    console.warn('User with this email already exists.');
+    return existingUser;
+  }
+
+  const newUser: User = {
+    id: String(users.length + 1), // Simple ID generation
+    name: userData.name,
+    email: userData.email,
+    role: 'user', // Default role
+    registeredEvents: [],
+  };
+  users.push(newUser);
+  return newUser;
+}
+
 
 export function updateUser(updatedUser: User): void {
   const index = users.findIndex(user => user.id === updatedUser.id);

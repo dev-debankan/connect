@@ -1,26 +1,50 @@
 
+'use client';
+
+import { useEffect, useState } from 'react';
 import { EventCard } from "@/components/event-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getUserById, getEventById } from "@/lib/data";
-import { notFound } from "next/navigation";
+import { getUserById, getEventById, type User, type Event as EventType } from "@/lib/data";
+import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
-  // In a real app, you would get the logged-in user's ID from the session.
-  const user = getUserById('1');
+  const [user, setUser] = useState<User | null>(null);
+  const [registeredEvents, setRegisteredEvents] = useState<EventType[]>([]);
+  const router = useRouter();
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('loggedInUser');
+    if (storedUser) {
+      const { id } = JSON.parse(storedUser);
+      const userData = getUserById(id);
+      if (userData) {
+        setUser(userData);
+        const events = userData.registeredEvents.map(eventId => getEventById(eventId)).filter(Boolean) as EventType[];
+        setRegisteredEvents(events);
+      } else {
+        // User not found, redirect to login
+        router.push('/login');
+      }
+    } else {
+      router.push('/login');
+    }
+  }, [router]);
 
   if (!user) {
-    // This would redirect to login in a real app
-    notFound();
+    return (
+        <div className="container py-12 md:py-16 text-center">
+            <p>Loading your dashboard...</p>
+        </div>
+    );
   }
 
-  const registeredEvents = user.registeredEvents.map(eventId => getEventById(eventId)).filter(Boolean);
   const now = new Date();
-  const upcomingRegisteredEvents = registeredEvents.filter(event => event!.time >= now);
-  const pastRegisteredEvents = registeredEvents.filter(event => event!.time < now);
+  const upcomingRegisteredEvents = registeredEvents.filter(event => event.time >= now);
+  const pastRegisteredEvents = registeredEvents.filter(event => event.time < now);
 
   return (
     <div className="container py-12 md:py-16">
@@ -45,7 +69,7 @@ export default function DashboardPage() {
                 <h3 className="text-xl font-semibold mb-4">Upcoming</h3>
                 {upcomingRegisteredEvents.length > 0 ? (
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {upcomingRegisteredEvents.map(event => event && <EventCard key={event.id} event={event} />)}
+                    {upcomingRegisteredEvents.map(event => <EventCard key={event.id} event={event} />)}
                   </div>
                 ) : (
                   <p className="text-muted-foreground">You have no upcoming registered events.</p>
@@ -55,7 +79,7 @@ export default function DashboardPage() {
                 <h3 className="text-xl font-semibold mb-4">Past</h3>
                 {pastRegisteredEvents.length > 0 ? (
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {pastRegisteredEvents.map(event => event && <EventCard key={event.id} event={event} />)}
+                    {pastRegisteredEvents.map(event => <EventCard key={event.id} event={event} />)}
                   </div>
                 ) : (
                   <p className="text-muted-foreground">You have no past registered events.</p>

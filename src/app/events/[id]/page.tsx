@@ -23,12 +23,14 @@ export default function EventDetailPage({ params: { id } }: { params: { id: stri
   const router = useRouter();
 
   useEffect(() => {
-    // In a real app, this would come from a session/token
-    const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    setIsLoggedIn(loggedIn);
-    if (loggedIn) {
-      // Mocking user '1' as the logged in user
-      setUser(getUserById('1') || null);
+    const storedUser = localStorage.getItem('loggedInUser');
+    if (storedUser) {
+      setIsLoggedIn(true);
+      const { id: userId } = JSON.parse(storedUser);
+      setUser(getUserById(userId) || null);
+    } else {
+      setIsLoggedIn(false);
+      setUser(null);
     }
   }, []);
 
@@ -42,6 +44,8 @@ export default function EventDetailPage({ params: { id } }: { params: { id: stri
   useEffect(() => {
     if (user && event) {
       setIsRegistered(user.registeredEvents.includes(event.id));
+    } else {
+      setIsRegistered(false);
     }
   }, [user, event]);
 
@@ -85,7 +89,6 @@ export default function EventDetailPage({ params: { id } }: { params: { id: stri
     updateEvent(updatedEvent);
     setUser(updatedUser);
     setEvent(updatedEvent);
-    setIsRegistered(!isRegistered);
 
     toast({
       title: "Success",
@@ -205,19 +208,25 @@ export default function EventDetailPage({ params: { id } }: { params: { id: stri
                 </div>
               </div>
               <Button size="lg" className="w-full mt-4" onClick={handleRegister}>
-                {isLoggedIn && isRegistered ? (
-                  <>
-                    <CheckCircle className="mr-2 h-5 w-5" />
-                    You are registered
-                  </>
+                {isLoggedIn ? (
+                  isRegistered ? (
+                    <>
+                      <CheckCircle className="mr-2 h-5 w-5" />
+                      You are registered
+                    </>
+                  ) : (
+                     <>
+                      <Ticket className="mr-2 h-5 w-5" />
+                      Register for this Event
+                    </>
+                  )
                 ) : (
                   <>
                     <Ticket className="mr-2 h-5 w-5" />
-                    Register for this Event
+                    Login to Register
                   </>
                 )}
               </Button>
-               {!isLoggedIn && <p className="text-sm text-center text-muted-foreground">Please log in to register.</p>}
             </CardContent>
           </Card>
           

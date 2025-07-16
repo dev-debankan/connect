@@ -6,36 +6,35 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Menu, Users } from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { getUserById } from '@/lib/data';
 
 export default function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     setIsMounted(true);
-    // In a real app, you'd check a token or session here
-    const loggedInStatus = localStorage.getItem('isLoggedIn') === 'true';
-    const adminStatus = localStorage.getItem('isAdmin') === 'true';
-    setIsLoggedIn(loggedInStatus);
-    setIsAdmin(adminStatus);
-  }, []);
-
-  const handleLogin = (admin = false) => {
-    localStorage.setItem('isLoggedIn', 'true');
-    localStorage.setItem('isAdmin', String(admin));
-    setIsLoggedIn(true);
-    setIsAdmin(admin);
-  };
+    const storedUser = localStorage.getItem('loggedInUser');
+    if (storedUser) {
+      const { role } = JSON.parse(storedUser);
+      setIsLoggedIn(true);
+      setIsAdmin(role === 'admin');
+    } else {
+      setIsLoggedIn(false);
+      setIsAdmin(false);
+    }
+  }, [pathname]); // Re-run on path change to update active links and auth state
 
   const handleLogout = () => {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('isAdmin');
+    localStorage.removeItem('loggedInUser');
     setIsLoggedIn(false);
     setIsAdmin(false);
+    router.push('/');
   };
 
   const navLinks = [
@@ -71,6 +70,20 @@ export default function Header() {
       })}
     </>
   );
+  
+  // A helper function to simulate logging in as a specific user for development
+  const handleDevLogin = (userId: string) => {
+    const user = getUserById(userId);
+    if (user) {
+       if (typeof window !== 'undefined') {
+        localStorage.setItem('loggedInUser', JSON.stringify({ id: user.id, role: user.role }));
+      }
+      setIsLoggedIn(true);
+      setIsAdmin(user.role === 'admin');
+      router.push('/dashboard');
+    }
+  };
+
 
   if (!isMounted) {
     return (
@@ -94,22 +107,21 @@ export default function Header() {
           <nav className="flex items-center space-x-6">{renderNavLinks()}</nav>
         </div>
 
-        <div className="flex-1 flex items-center md:hidden">
-           <Link href="/" className="mr-6 flex items-center space-x-2">
+        <div className="flex-1 md:hidden">
+          <Link href="/" className="flex items-center space-x-2">
             <Users className="h-6 w-6 text-primary" />
             <span className="font-bold sm:inline-block font-headline">GDG Connect</span>
           </Link>
         </div>
 
 
-        <div className="flex items-center justify-end space-x-2 flex-1 md:flex-none">
+        <div className="flex items-center justify-end space-x-2">
           {isLoggedIn ? (
             <Button onClick={handleLogout} variant="secondary">
               Logout
             </Button>
           ) : (
-            <>
-              <div className="hidden sm:flex">
+            <div className="hidden sm:flex">
                 <Link href="/login">
                   <Button variant="ghost">Login</Button>
                 </Link>
@@ -117,17 +129,16 @@ export default function Header() {
                   <Button>Sign Up</Button>
                 </Link>
               </div>
-            </>
           )}
 
           {/* DEV ONLY: Mock auth controls */}
           {!isLoggedIn && process.env.NODE_ENV === 'development' && (
             <div className="flex items-center gap-2">
-              <Button size="sm" variant="outline" onClick={() => handleLogin()}>
+              <Button size="sm" variant="outline" onClick={() => handleDevLogin('1')}>
                 <span className="hidden md:inline">Login as User</span>
                 <span className="md:hidden">User</span>
               </Button>
-              <Button size="sm" variant="outline" onClick={() => handleLogin(true)}>
+              <Button size="sm" variant="outline" onClick={() => handleDevLogin('3')}>
                  <span className="hidden md:inline">Login as Admin</span>
                  <span className="md:hidden">Admin</span>
               </Button>

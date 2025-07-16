@@ -9,20 +9,34 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Users, Eye, EyeOff } from "lucide-react";
+import { getUserByEmail } from "@/lib/data";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // In a real app, you'd handle authentication here.
-    // For now, we'll just simulate a login and redirect.
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('isLoggedIn', 'true');
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    
+    const user = getUserByEmail(email);
+
+    if (user) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('loggedInUser', JSON.stringify({ id: user.id, role: user.role }));
+      }
+      router.push('/dashboard');
+    } else {
+      toast({
+        title: "Login Failed",
+        description: "No user found with that email address. Please sign up.",
+        variant: "destructive",
+      });
     }
-    router.push('/dashboard');
   };
 
   return (
@@ -50,7 +64,7 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="m@example.com" required />
+                <Input id="email" name="email" type="email" placeholder="m@example.com" required />
               </div>
               <div className="grid gap-2">
                 <div className="flex items-center justify-between">
