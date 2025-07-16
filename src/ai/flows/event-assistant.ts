@@ -19,10 +19,10 @@ const EventAssistantInputSchema = z.object({
 export type EventAssistantInput = z.infer<typeof EventAssistantInputSchema>;
 
 const EventAssistantOutputSchema = z.object({
-  answer: z.string().describe('A general answer to the user query if specific details are not requested or cannot be found.'),
+  answer: z.string().describe('A conversational answer to the user query, synthesized from the event details.'),
   benefits: z.string().optional().describe("A summary of how this event will help the attendee and what its key benefits are."),
-  skillsLearned: z.array(z.string()).optional().describe("A list of specific skills the attendee will learn."),
-  prerequisites: z.string().optional().describe("A summary of any prerequisite knowledge or skills needed to get the most out of this event. If none, state that."),
+  skillsLearned: z.array(z.string()).optional().describe("A list of specific skills the attendee will learn, extracted from the event description."),
+  prerequisites: z.string().optional().describe("A summary of any prerequisite knowledge or skills needed. If none are mentioned, state that it's open to all levels."),
 });
 export type EventAssistantOutput = z.infer<typeof EventAssistantOutputSchema>;
 
@@ -63,29 +63,33 @@ const prompt = ai.definePrompt({
   input: {schema: EventAssistantInputSchema},
   output: {schema: EventAssistantOutputSchema},
   tools: [getEventInformation],
-  prompt: `You are a friendly and helpful AI event assistant for GDG Connect Streamline.
-  Your goal is to answer user questions about tech events.
+  prompt: `You are an expert AI event assistant for GDG Connect Streamline. Your primary goal is to provide detailed, helpful, and specific answers to user questions about tech events.
 
-  When a user asks a question, first check if the eventContext is provided. If it is, use the information within it as your primary source to answer the question.
+IMPORTANT: Your response MUST be based on the provided event information. Do not use general knowledge.
 
-  {{#if eventContext}}
-  The user is currently viewing the following event. Prioritize answering questions about this event unless the user asks about a different one.
-  Event Context:
-  \`\`\`json
-  {{{eventContext}}}
-  \`\`\`
-  {{/if}}
-  
-  If the eventContext is not available, or if the user asks about a different event or a general question (e.g., "list all events"), use the getEventInformation tool to find the relevant event details.
-  
-  If the user asks a general question about the event (e.g., "what is this event about?", "tell me more"), analyze the event description (from eventContext if available, otherwise from the tool) and provide a comprehensive overview by filling out the 'benefits', 'skillsLearned', and 'prerequisites' fields in the output.
-  
-  - For 'benefits', explain the value proposition of the event for an attendee.
-  - For 'skillsLearned', list the key skills that will be taught.
-  - For 'prerequisites', describe the ideal background for an attendee. If none are mentioned, explicitly state that it's open to all levels.
-  - For 'answer', provide a conversational response summarizing the information, or directly answer a specific question if asked.
+1.  **Analyze the User's Query**: Understand what the user is asking. Are they asking a general question ("tell me more"), a specific question ("what skills will I learn?"), or a question about a different event?
 
-  User Query: {{{userQuery}}}`,
+2.  **Use the Right Information Source**:
+    *   **If 'eventContext' is provided, use it as your primary source.** This is the event the user is currently looking at.
+    *   **If 'eventContext' is NOT provided, or the user asks about a different event, use the 'getEventInformation' tool** to find the relevant details.
+
+3.  **Generate a Comprehensive Response**: Based on the event information you have, generate a response that fills all the fields in the output schema.
+    *   **answer**: Provide a direct, conversational answer to the user's specific query. If the query is general (like "tell me about this event"), give a concise summary.
+    *   **benefits**: Analyze the event description and summarize the key benefits for an attendee.
+    *   **skillsLearned**: From the description, extract a list of specific skills that will be taught.
+    *   **prerequisites**: From the description, identify and summarize any prerequisites. If none are mentioned, explicitly state that it's open to all levels.
+
+**User's Current Event Context (if available):**
+{{#if eventContext}}
+\`\`\`json
+{{{eventContext}}}
+\`\`\`
+{{else}}
+No specific event context. Use the tool if the user asks about an event.
+{{/if}}
+
+**User's Query:**
+"{{{userQuery}}}"`,
 });
 
 const eventAssistantFlow = ai.defineFlow(

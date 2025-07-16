@@ -35,19 +35,21 @@ const GeminiLogo = () => (
 
 const AssistantMessageContent = ({ content }: { content: EventAssistantOutput }) => (
   <div className="space-y-4">
-    <p>{content.answer}</p>
+    {content.answer && <p>{content.answer}</p>}
+    
     {content.benefits && (
-      <div>
-        <h4 className="font-semibold flex items-center gap-2 mb-2">
+      <div className="pt-2">
+        <h4 className="font-semibold flex items-center gap-2 mb-2 text-sm">
           <Sparkles className="h-4 w-4 text-primary" />
           How this helps you
         </h4>
         <p className="text-sm text-muted-foreground">{content.benefits}</p>
       </div>
     )}
+
     {content.skillsLearned && content.skillsLearned.length > 0 && (
-       <div>
-        <h4 className="font-semibold flex items-center gap-2 mb-2">
+       <div className="pt-2">
+        <h4 className="font-semibold flex items-center gap-2 mb-2 text-sm">
             <Lightbulb className="h-4 w-4 text-primary" />
             Skills you'll learn
         </h4>
@@ -56,9 +58,10 @@ const AssistantMessageContent = ({ content }: { content: EventAssistantOutput })
         </div>
        </div>
     )}
+
      {content.prerequisites && (
-      <div>
-        <h4 className="font-semibold flex items-center gap-2 mb-2">
+      <div className="pt-2">
+        <h4 className="font-semibold flex items-center gap-2 mb-2 text-sm">
             <BookCheck className="h-4 w-4 text-primary" />
             Prerequisites
         </h4>
@@ -174,7 +177,7 @@ export default function EventAssistant({ eventContext }: EventAssistantProps) {
                  {messages.length === 0 && !isLoading && (
                     <div className="text-center text-sm text-muted-foreground pt-16">
                         <p>Have a question about this event?</p>
-                        <p>Ask me "What is this event about?"</p>
+                        <p>Ask me "What will I learn?" or "Tell me more".</p>
                     </div>
                 )}
             </div>
