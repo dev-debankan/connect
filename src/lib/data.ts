@@ -117,6 +117,15 @@ export function updateEvent(updatedEvent: Event): void {
   }
 }
 
+export function deleteEvent(eventId: string): void {
+  events = events.filter(event => event.id !== eventId);
+  // Also remove this event from any user's registeredEvents list
+  users = users.map(user => ({
+    ...user,
+    registeredEvents: user.registeredEvents.filter(id => id !== eventId)
+  }));
+}
+
 export function getUsers(): User[] {
   return [...users];
 }

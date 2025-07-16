@@ -2,7 +2,7 @@
 'use client'
 
 import { useState } from 'react';
-import { getEvents, getUsers, type Event, type User } from '@/lib/data';
+import { getEvents, getUsers, type Event, type User, deleteEvent } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -28,6 +28,18 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -41,7 +53,10 @@ export default function AdminDashboardPage() {
   const [users, setUsers] = useState<User[]>(getUsers());
   const [isEventFormOpen, setIsEventFormOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-
+  const [eventToView, setEventToView] = useState<Event | null>(null);
+  const [isRegistrationsOpen, setIsRegistrationsOpen] = useState(false);
+  const [eventToDelete, setEventToDelete] = useState<Event | null>(null);
+  
   const handleCreateEvent = () => {
     setSelectedEvent(null);
     setIsEventFormOpen(true);
@@ -51,6 +66,30 @@ export default function AdminDashboardPage() {
     setSelectedEvent(event);
     setIsEventFormOpen(true);
   };
+
+  const handleViewRegistrations = (event: Event) => {
+    setEventToView(event);
+    setIsRegistrationsOpen(true);
+  };
+
+  const handleDeleteClick = (event: Event) => {
+    setEventToDelete(event);
+  };
+  
+  const handleConfirmDelete = () => {
+    if (eventToDelete) {
+      deleteEvent(eventToDelete.id);
+      setEvents(getEvents());
+      setEventToDelete(null);
+    }
+  };
+
+  const getRegisteredUsers = (event: Event | null): User[] => {
+    if (!event) return [];
+    const allUsers = getUsers();
+    return allUsers.filter(user => event.registrations.includes(user.id));
+  };
+
 
   return (
     <div className="container py-12 md:py-16">
@@ -119,14 +158,16 @@ export default function AdminDashboardPage() {
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Edit
                               </DropdownMenuItem>
-                               <DropdownMenuItem>
+                               <DropdownMenuItem onClick={() => handleViewRegistrations(event)}>
                                 <UsersIcon className="mr-2 h-4 w-4" />
                                 View Registrations
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive">
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
-                              </DropdownMenuItem>
+                              <AlertDialogTrigger asChild>
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={() => handleDeleteClick(event)} className="text-destructive">
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </AlertDialogTrigger>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
@@ -193,6 +234,63 @@ export default function AdminDashboardPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <AlertDialog>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the event
+              <span className="font-semibold"> {eventToDelete?.title}</span> and remove all registration data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setEventToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete}>Continue</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Dialog open={isRegistrationsOpen} onOpenChange={setIsRegistrationsOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-headline">Registrations for {eventToView?.title}</DialogTitle>
+            <DialogDescription>
+              A list of all users registered for this event.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="overflow-y-auto max-h-80 mt-4">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {getRegisteredUsers(eventToView).length > 0 ? (
+                  getRegisteredUsers(eventToView).map(user => (
+                    <TableRow key={user.id}>
+                      <TableCell>{user.name}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={2} className="text-center text-muted-foreground">
+                      No users have registered yet.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+          <DialogFooter className="mt-4">
+             <Button variant="outline" onClick={() => setIsRegistrationsOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
       <Dialog open={isEventFormOpen} onOpenChange={setIsEventFormOpen}>
         <DialogContent className="sm:max-w-[600px]">
