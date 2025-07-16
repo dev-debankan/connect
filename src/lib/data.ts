@@ -41,7 +41,7 @@ let events: Event[] = [
     description: 'Explore the new features of Next.js 15, including React 19 support, new APIs, and performance improvements. This session is for intermediate to advanced developers.',
     registrations: ['1', '3'],
     meetingLink: 'https://meet.google.com/xyz-abc-def',
-    image: 'https://placehold.co/600x400',
+    image: 'https://placehold.co/600x400/000000/FFFFFF',
     category: 'Webinar',
   },
   {
@@ -52,7 +52,7 @@ let events: Event[] = [
     topic: 'Artificial Intelligence',
     description: 'A comprehensive workshop on building generative AI applications using Google\'s Gemini models and the Genkit framework. Perfect for developers looking to get into AI.',
     registrations: ['2', '3'],
-    image: 'https://placehold.co/600x400',
+    image: 'https://placehold.co/600x400/4285F4/FFFFFF',
     category: 'Workshop',
   },
   {
@@ -63,7 +63,7 @@ let events: Event[] = [
     topic: 'Cloud & Firebase',
     description: 'Learn how to leverage Firebase to build scalable, secure, and real-time applications. We will cover Firestore, Authentication, and Cloud Functions.',
     registrations: ['1', '3'],
-    image: 'https://placehold.co/600x400',
+    image: 'https://placehold.co/600x400/FFCA28/000000',
     category: 'Seminar',
   },
   {
@@ -75,7 +75,7 @@ let events: Event[] = [
     description: 'A look back at our popular session on fundamental UI/UX design principles that lead to great user experiences. This is a recording of the live event.',
     registrations: [],
     meetingLink: 'https://youtube.com/watch?v=xyz',
-    image: 'https://placehold.co/600x400',
+    image: 'https://placehold.co/600x400/7C4DFF/FFFFFF',
     category: 'Webinar',
   },
    {
@@ -86,7 +86,7 @@ let events: Event[] = [
     topic: 'Web Development',
     description: 'Tired of prop drilling? This webinar explores advanced state management techniques in React using libraries like Zustand, Jotai, and the Context API.',
     registrations: [],
-    image: 'https://placehold.co/600x400',
+    image: 'https://placehold.co/600x400/61DAFB/000000',
     category: 'Webinar',
   },
    {
@@ -97,7 +97,7 @@ let events: Event[] = [
     topic: 'Backend Development',
     description: 'Get started with the Go programming language. This workshop covers syntax, concurrency, and building a simple web server.',
     registrations: [],
-    image: 'https://placehold.co/600x400',
+    image: 'https://placehold.co/600x400/00ADD8/FFFFFF',
     category: 'Workshop',
   },
 ];
