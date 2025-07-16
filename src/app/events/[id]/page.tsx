@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { getEventById, getUserById, updateUser, updateEvent, type Event, type User } from '@/lib/data';
 import Image from 'next/image';
-import { notFound } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,9 +16,21 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function EventDetailPage({ params: { id } }: { params: { id: string } }) {
   const [event, setEvent] = useState<Event | null>(null);
-  const [user, setUser] = useState<User | undefined>(getUserById('1'));
+  const [user, setUser] = useState<User | null>(null);
   const [isRegistered, setIsRegistered] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
+
+  useEffect(() => {
+    // In a real app, this would come from a session/token
+    const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    setIsLoggedIn(loggedIn);
+    if (loggedIn) {
+      // Mocking user '1' as the logged in user
+      setUser(getUserById('1') || null);
+    }
+  }, []);
 
   useEffect(() => {
     const eventData = getEventById(id);
@@ -34,6 +46,11 @@ export default function EventDetailPage({ params: { id } }: { params: { id: stri
   }, [user, event]);
 
   const handleRegister = () => {
+    if (!isLoggedIn) {
+      router.push('/login');
+      return;
+    }
+    
     if (!user || !event) return;
 
     let updatedUser: User;
@@ -187,8 +204,8 @@ export default function EventDetailPage({ params: { id } }: { params: { id: stri
                   <p className="text-muted-foreground">{event.topic}</p>
                 </div>
               </div>
-              <Button size="lg" className="w-full mt-4" onClick={handleRegister} disabled={!user}>
-                {isRegistered ? (
+              <Button size="lg" className="w-full mt-4" onClick={handleRegister}>
+                {isLoggedIn && isRegistered ? (
                   <>
                     <CheckCircle className="mr-2 h-5 w-5" />
                     You are registered
@@ -200,7 +217,7 @@ export default function EventDetailPage({ params: { id } }: { params: { id: stri
                   </>
                 )}
               </Button>
-               {!user && <p className="text-sm text-center text-muted-foreground">Please log in to register.</p>}
+               {!isLoggedIn && <p className="text-sm text-center text-muted-foreground">Please log in to register.</p>}
             </CardContent>
           </Card>
           
