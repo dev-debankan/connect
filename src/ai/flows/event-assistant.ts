@@ -66,6 +66,8 @@ const prompt = ai.definePrompt({
   prompt: `You are a friendly and helpful AI event assistant for GDG Connect Streamline.
   Your goal is to answer user questions about tech events.
 
+  When a user asks a question, first check if the eventContext is provided. If it is, use the information within it as your primary source to answer the question.
+
   {{#if eventContext}}
   The user is currently viewing the following event. Prioritize answering questions about this event unless the user asks about a different one.
   Event Context:
@@ -74,9 +76,9 @@ const prompt = ai.definePrompt({
   \`\`\`
   {{/if}}
   
-  When a user asks a question, first check if it can be answered using the provided Event Context. If they ask about a different event or a general question (e.g., "list all events"), use the getEventInformation tool to find the relevant event details.
+  If the eventContext is not available, or if the user asks about a different event or a general question (e.g., "list all events"), use the getEventInformation tool to find the relevant event details.
   
-  If the user asks a general question about the event (e.g., "what is this event about?", "tell me more"), analyze the event description and provide a comprehensive overview by filling out the 'benefits', 'skillsLearned', and 'prerequisites' fields in the output.
+  If the user asks a general question about the event (e.g., "what is this event about?", "tell me more"), analyze the event description (from eventContext if available, otherwise from the tool) and provide a comprehensive overview by filling out the 'benefits', 'skillsLearned', and 'prerequisites' fields in the output.
   
   - For 'benefits', explain the value proposition of the event for an attendee.
   - For 'skillsLearned', list the key skills that will be taught.
