@@ -1,6 +1,7 @@
+
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import { getEventById, getUserById, updateUser, updateEvent, type Event, type User } from '@/lib/data';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -14,8 +15,8 @@ import EventAssistant from '@/components/event-assistant';
 import { useToast } from '@/components/ui/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function EventDetailPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [event, setEvent] = useState<Event | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isRegistered, setIsRegistered] = useState(false);
