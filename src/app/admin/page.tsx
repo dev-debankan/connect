@@ -92,60 +92,121 @@ export default function AdminDashboardPage() {
 
 
   return (
-    <div className="container py-12 md:py-16">
-      <div className="mb-8">
-        <h1 className="font-headline text-4xl font-bold tracking-tight">Admin Dashboard</h1>
-        <p className="text-muted-foreground mt-2">Manage events, users, and registrations.</p>
-      </div>
+    <AlertDialog>
+      <div className="container py-12 md:py-16">
+        <div className="mb-8">
+          <h1 className="font-headline text-4xl font-bold tracking-tight">Admin Dashboard</h1>
+          <p className="text-muted-foreground mt-2">Manage events, users, and registrations.</p>
+        </div>
 
-      <Tabs defaultValue="events" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
-          <TabsTrigger value="events">
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            Events
-          </TabsTrigger>
-          <TabsTrigger value="users">
-            <UsersIcon className="mr-2 h-4 w-4" />
-            Users
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="events" className="mt-8">
-          <Card>
-            <CardHeader className="flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
-                <CardTitle className="font-headline">Event Management</CardTitle>
-                <CardDescription>Create, edit, and track event registrations.</CardDescription>
-              </div>
-              <Button onClick={handleCreateEvent} className="w-full md:w-auto">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Create Event
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
+        <Tabs defaultValue="events" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
+            <TabsTrigger value="events">
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              Events
+            </TabsTrigger>
+            <TabsTrigger value="users">
+              <UsersIcon className="mr-2 h-4 w-4" />
+              Users
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="events" className="mt-8">
+            <Card>
+              <CardHeader className="flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <CardTitle className="font-headline">Event Management</CardTitle>
+                  <CardDescription>Create, edit, and track event registrations.</CardDescription>
+                </div>
+                <Button onClick={handleCreateEvent} className="w-full md:w-auto">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Create Event
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Title</TableHead>
+                        <TableHead>Speaker</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead className="text-center">Registrations</TableHead>
+                        <TableHead className="text-center">Meeting Link</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {events.map((event) => (
+                        <TableRow key={event.id}>
+                          <TableCell className="font-medium whitespace-nowrap">{event.title}</TableCell>
+                          <TableCell className="whitespace-nowrap">{event.speaker}</TableCell>
+                          <TableCell className="whitespace-nowrap">{format(event.time, 'MMM d, yyyy')}</TableCell>
+                          <TableCell className="text-center">{event.registrations.length}</TableCell>
+                          <TableCell className="text-center">
+                            {event.meetingLink ? <Badge>Set</Badge> : <Badge variant="secondary">Not Set</Badge>}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                  <span className="sr-only">Open menu</span>
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuItem onClick={() => handleEditEvent(event)}>
+                                  <Pencil className="mr-2 h-4 w-4" />
+                                  Edit
+                                </DropdownMenuItem>
+                                 <DropdownMenuItem onClick={() => handleViewRegistrations(event)}>
+                                  <UsersIcon className="mr-2 h-4 w-4" />
+                                  View Registrations
+                                </DropdownMenuItem>
+                                <AlertDialogTrigger asChild>
+                                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={() => handleDeleteClick(event)} className="text-destructive">
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                </AlertDialogTrigger>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="users" className="mt-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-headline">User Management</CardTitle>
+                <CardDescription>View and manage all registered users.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Title</TableHead>
-                      <TableHead>Speaker</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead className="text-center">Registrations</TableHead>
-                      <TableHead className="text-center">Meeting Link</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Role</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {events.map((event) => (
-                      <TableRow key={event.id}>
-                        <TableCell className="font-medium whitespace-nowrap">{event.title}</TableCell>
-                        <TableCell className="whitespace-nowrap">{event.speaker}</TableCell>
-                        <TableCell className="whitespace-nowrap">{format(event.time, 'MMM d, yyyy')}</TableCell>
-                        <TableCell className="text-center">{event.registrations.length}</TableCell>
-                        <TableCell className="text-center">
-                          {event.meetingLink ? <Badge>Set</Badge> : <Badge variant="secondary">Not Set</Badge>}
+                    {users.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell className="font-medium whitespace-nowrap">{user.name}</TableCell>
+                        <TableCell className="whitespace-nowrap">{user.email}</TableCell>
+                        <TableCell>
+                          <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>{user.role}</Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          <DropdownMenu>
+                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" className="h-8 w-8 p-0">
                                 <span className="sr-only">Open menu</span>
@@ -154,20 +215,14 @@ export default function AdminDashboardPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem onClick={() => handleEditEvent(event)}>
+                              <DropdownMenuItem>
                                 <Pencil className="mr-2 h-4 w-4" />
-                                Edit
+                                Edit role
                               </DropdownMenuItem>
-                               <DropdownMenuItem onClick={() => handleViewRegistrations(event)}>
-                                <UsersIcon className="mr-2 h-4 w-4" />
-                                View Registrations
+                              <DropdownMenuItem className="text-destructive">
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete user
                               </DropdownMenuItem>
-                              <AlertDialogTrigger asChild>
-                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={() => handleDeleteClick(event)} className="text-destructive">
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Delete
-                                </DropdownMenuItem>
-                              </AlertDialogTrigger>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
@@ -175,169 +230,115 @@ export default function AdminDashboardPage() {
                     ))}
                   </TableBody>
                 </Table>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="users" className="mt-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-headline">User Management</CardTitle>
-              <CardDescription>View and manage all registered users.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the event
+                <span className="font-semibold"> {eventToDelete?.title}</span> and remove all registration data.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setEventToDelete(null)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleConfirmDelete}>Continue</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+
+        <Dialog open={isRegistrationsOpen} onOpenChange={setIsRegistrationsOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="font-headline">Registrations for {eventToView?.title}</DialogTitle>
+              <DialogDescription>
+                A list of all users registered for this event.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="overflow-y-auto max-h-80 mt-4">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {users.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium whitespace-nowrap">{user.name}</TableCell>
-                      <TableCell className="whitespace-nowrap">{user.email}</TableCell>
-                      <TableCell>
-                        <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>{user.role}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                         <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Open menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem>
-                              <Pencil className="mr-2 h-4 w-4" />
-                              Edit role
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive">
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete user
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                  {getRegisteredUsers(eventToView).length > 0 ? (
+                    getRegisteredUsers(eventToView).map(user => (
+                      <TableRow key={user.id}>
+                        <TableCell>{user.name}</TableCell>
+                        <TableCell>{user.email}</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={2} className="text-center text-muted-foreground">
+                        No users have registered yet.
                       </TableCell>
                     </TableRow>
-                  ))}
+                  )}
                 </TableBody>
               </Table>
+            </div>
+            <DialogFooter className="mt-4">
+               <Button variant="outline" onClick={() => setIsRegistrationsOpen(false)}>Close</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+
+        <Dialog open={isEventFormOpen} onOpenChange={setIsEventFormOpen}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle className="font-headline">{selectedEvent ? 'Edit Event' : 'Create New Event'}</DialogTitle>
+              <DialogDescription>
+                {selectedEvent ? 'Update the details for this event.' : 'Fill in the details for the new event.'}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-6 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
+                <Label htmlFor="title" className="md:text-right">Title</Label>
+                <Input id="title" defaultValue={selectedEvent?.title} className="md:col-span-3" />
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      <AlertDialog>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the event
-              <span className="font-semibold"> {eventToDelete?.title}</span> and remove all registration data.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setEventToDelete(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDelete}>Continue</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <Dialog open={isRegistrationsOpen} onOpenChange={setIsRegistrationsOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="font-headline">Registrations for {eventToView?.title}</DialogTitle>
-            <DialogDescription>
-              A list of all users registered for this event.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="overflow-y-auto max-h-80 mt-4">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {getRegisteredUsers(eventToView).length > 0 ? (
-                  getRegisteredUsers(eventToView).map(user => (
-                    <TableRow key={user.id}>
-                      <TableCell>{user.name}</TableCell>
-                      <TableCell>{user.email}</TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={2} className="text-center text-muted-foreground">
-                      No users have registered yet.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-          <DialogFooter className="mt-4">
-             <Button variant="outline" onClick={() => setIsRegistrationsOpen(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-
-      <Dialog open={isEventFormOpen} onOpenChange={setIsEventFormOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle className="font-headline">{selectedEvent ? 'Edit Event' : 'Create New Event'}</DialogTitle>
-            <DialogDescription>
-              {selectedEvent ? 'Update the details for this event.' : 'Fill in the details for the new event.'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-6 py-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
-              <Label htmlFor="title" className="md:text-right">Title</Label>
-              <Input id="title" defaultValue={selectedEvent?.title} className="md:col-span-3" />
+              <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
+                <Label htmlFor="speaker" className="md:text-right">Speaker</Label>
+                <Input id="speaker" defaultValue={selectedEvent?.speaker} className="md:col-span-3" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
+                <Label htmlFor="topic" className="md:text-right">Topic</Label>
+                <Input id="topic" defaultValue={selectedEvent?.topic} className="md:col-span-3" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
+                <Label htmlFor="description" className="md:text-right">Description</Label>
+                <Textarea id="description" defaultValue={selectedEvent?.description} className="md:col-span-3" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
+                <Label htmlFor="imageUrl" className="md:text-right">
+                   <div className="flex items-center gap-1">
+                    <ImageIcon className="h-3 w-3" /> Image URL
+                  </div>
+                </Label>
+                <Input id="imageUrl" defaultValue={selectedEvent?.image} className="md:col-span-3" placeholder="https://placehold.co/600x400.png" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
+                <Label htmlFor="meetingLink" className="md:text-right">
+                  <div className="flex items-center gap-1">
+                    <LinkIcon className="h-3 w-3" /> Meeting Link
+                  </div>
+                </Label>
+                <Input id="meetingLink" defaultValue={selectedEvent?.meetingLink} className="md:col-span-3" placeholder="https://meet.google.com/..." />
+              </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
-              <Label htmlFor="speaker" className="md:text-right">Speaker</Label>
-              <Input id="speaker" defaultValue={selectedEvent?.speaker} className="md:col-span-3" />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
-              <Label htmlFor="topic" className="md:text-right">Topic</Label>
-              <Input id="topic" defaultValue={selectedEvent?.topic} className="md:col-span-3" />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
-              <Label htmlFor="description" className="md:text-right">Description</Label>
-              <Textarea id="description" defaultValue={selectedEvent?.description} className="md:col-span-3" />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
-              <Label htmlFor="imageUrl" className="md:text-right">
-                 <div className="flex items-center gap-1">
-                  <ImageIcon className="h-3 w-3" /> Image URL
-                </div>
-              </Label>
-              <Input id="imageUrl" defaultValue={selectedEvent?.image} className="md:col-span-3" placeholder="https://placehold.co/600x400.png" />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
-              <Label htmlFor="meetingLink" className="md:text-right">
-                <div className="flex items-center gap-1">
-                  <LinkIcon className="h-3 w-3" /> Meeting Link
-                </div>
-              </Label>
-              <Input id="meetingLink" defaultValue={selectedEvent?.meetingLink} className="md:col-span-3" placeholder="https://meet.google.com/..." />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="submit">Save changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+            <DialogFooter>
+              <Button type="submit">Save changes</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </AlertDialog>
   );
+}
