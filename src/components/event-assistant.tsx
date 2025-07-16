@@ -87,14 +87,14 @@ export default function EventAssistant({ eventContext }: EventAssistantProps) {
     try {
       const assistantInput: EventAssistantInput = { userQuery: currentInput };
       if (eventContext) {
-        // Pass a simplified version of the event context
-        assistantInput.eventContext = {
+        // Pass a simplified version of the event context, stringified.
+        assistantInput.eventContext = JSON.stringify({
           title: eventContext.title,
           description: eventContext.description,
           speaker: eventContext.speaker,
           topic: eventContext.topic,
           category: eventContext.category
-        };
+        });
       }
       const result = await eventAssistant(assistantInput);
       const assistantMessage: Message = { role: 'assistant', content: result };

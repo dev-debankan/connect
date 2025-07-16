@@ -1,4 +1,4 @@
-// src/ai/flows/event-assistant.ts
+
 'use server';
 /**
  * @fileOverview An AI event assistant that provides event-specific information.
@@ -9,12 +9,12 @@
  */
 
 import {ai} from '@/ai/genkit';
-import { getEvents, type Event } from '@/lib/data';
+import { getEvents } from '@/lib/data';
 import {z} from 'genkit';
 
 const EventAssistantInputSchema = z.object({
   userQuery: z.string().describe('The user query about the event.'),
-  eventContext: z.any().optional().describe('The context of the specific event the user is currently viewing. This will be a JSON object with event details.'),
+  eventContext: z.string().optional().describe('A JSON string of the specific event context the user is currently viewing.'),
 });
 export type EventAssistantInput = z.infer<typeof EventAssistantInputSchema>;
 
@@ -70,7 +70,7 @@ const prompt = ai.definePrompt({
   The user is currently viewing the following event. Prioritize answering questions about this event unless the user asks about a different one.
   Event Context:
   \`\`\`json
-  {{{jsonStringify eventContext}}}
+  {{{eventContext}}}
   \`\`\`
   {{/if}}
   
