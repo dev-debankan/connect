@@ -234,7 +234,7 @@ export default function AdminDashboardPage() {
           <TabsContent value="events" className="mt-8">
             <Card>
               <CardHeader className="flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
+                <div className="space-y-2">
                   <CardTitle className="font-headline">Event Management</CardTitle>
                   <CardDescription>Create, edit, and track event registrations.</CardDescription>
                 </div>
