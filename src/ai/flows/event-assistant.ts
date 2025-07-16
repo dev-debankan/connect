@@ -19,7 +19,10 @@ const EventAssistantInputSchema = z.object({
 export type EventAssistantInput = z.infer<typeof EventAssistantInputSchema>;
 
 const EventAssistantOutputSchema = z.object({
-  answer: z.string().describe('The answer to the user query based on the event details.'),
+  answer: z.string().describe('A general answer to the user query if specific details are not requested or cannot be found.'),
+  benefits: z.string().optional().describe("A summary of how this event will help the attendee and what its key benefits are."),
+  skillsLearned: z.array(z.string()).optional().describe("A list of specific skills the attendee will learn."),
+  prerequisites: z.string().optional().describe("A summary of any prerequisite knowledge or skills needed to get the most out of this event. If none, state that."),
 });
 export type EventAssistantOutput = z.infer<typeof EventAssistantOutputSchema>;
 
@@ -73,7 +76,12 @@ const prompt = ai.definePrompt({
   
   When a user asks a question, first check if it can be answered using the provided Event Context. If they ask about a different event or a general question (e.g., "list all events"), use the getEventInformation tool to find the relevant event details.
   
-  Formulate a clear and concise answer based on the available information.
+  If the user asks a general question about the event (e.g., "what is this event about?", "tell me more"), analyze the event description and provide a comprehensive overview by filling out the 'benefits', 'skillsLearned', and 'prerequisites' fields in the output.
+  
+  - For 'benefits', explain the value proposition of the event for an attendee.
+  - For 'skillsLearned', list the key skills that will be taught.
+  - For 'prerequisites', describe the ideal background for an attendee. If none are mentioned, explicitly state that it's open to all levels.
+  - For 'answer', provide a conversational response summarizing the information, or directly answer a specific question if asked.
 
   User Query: {{{userQuery}}}`,
 });

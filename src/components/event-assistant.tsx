@@ -3,18 +3,19 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { eventAssistant, type EventAssistantInput } from '@/ai/flows/event-assistant';
+import { eventAssistant, type EventAssistantInput, type EventAssistantOutput } from '@/ai/flows/event-assistant';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Bot, Send, User, Loader2 } from 'lucide-react';
+import { Bot, Send, User, Loader2, Sparkles, Lightbulb, BookCheck } from 'lucide-react';
 import { useToast } from './ui/use-toast';
 import type { Event } from '@/lib/data';
+import { Badge } from './ui/badge';
 
 interface Message {
   role: 'user' | 'assistant';
-  content: string;
+  content: string | EventAssistantOutput;
 }
 
 interface EventAssistantProps {
@@ -31,6 +32,41 @@ const GeminiLogo = () => (
       <path d="M12 2L9.91 9.91L2 12L9.91 14.09L12 22L14.09 14.09L22 12L14.09 9.91L12 2Z" />
     </svg>
   );
+
+const AssistantMessageContent = ({ content }: { content: EventAssistantOutput }) => (
+  <div className="space-y-4">
+    <p>{content.answer}</p>
+    {content.benefits && (
+      <div>
+        <h4 className="font-semibold flex items-center gap-2 mb-2">
+          <Sparkles className="h-4 w-4 text-primary" />
+          How this helps you
+        </h4>
+        <p className="text-sm text-muted-foreground">{content.benefits}</p>
+      </div>
+    )}
+    {content.skillsLearned && content.skillsLearned.length > 0 && (
+       <div>
+        <h4 className="font-semibold flex items-center gap-2 mb-2">
+            <Lightbulb className="h-4 w-4 text-primary" />
+            Skills you'll learn
+        </h4>
+        <div className="flex flex-wrap gap-2">
+            {content.skillsLearned.map(skill => <Badge key={skill} variant="secondary">{skill}</Badge>)}
+        </div>
+       </div>
+    )}
+     {content.prerequisites && (
+      <div>
+        <h4 className="font-semibold flex items-center gap-2 mb-2">
+            <BookCheck className="h-4 w-4 text-primary" />
+            Prerequisites
+        </h4>
+        <p className="text-sm text-muted-foreground">{content.prerequisites}</p>
+      </div>
+    )}
+  </div>
+);
 
 export default function EventAssistant({ eventContext }: EventAssistantProps) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -54,7 +90,7 @@ export default function EventAssistant({ eventContext }: EventAssistantProps) {
         assistantInput.eventContext = eventContext;
       }
       const result = await eventAssistant(assistantInput);
-      const assistantMessage: Message = { role: 'assistant', content: result.answer };
+      const assistantMessage: Message = { role: 'assistant', content: result };
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error('AI Assistant Error:', error);
@@ -63,7 +99,7 @@ export default function EventAssistant({ eventContext }: EventAssistantProps) {
         description: "The AI assistant is currently unavailable. Please try again later.",
         variant: "destructive",
       });
-      setMessages(prev => prev.filter(msg => msg.content !== currentInput)); // Remove user message on error
+      setMessages(prev => prev.filter(msg => typeof msg.content === 'string' && msg.content !== currentInput)); // Remove user message on error
     } finally {
       setIsLoading(false);
     }
@@ -78,8 +114,8 @@ export default function EventAssistant({ eventContext }: EventAssistantProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-80 flex flex-col">
-          <ScrollArea className="flex-grow h-64 pr-4 -mr-4 mb-4">
+        <div className="h-96 flex flex-col">
+          <ScrollArea className="flex-grow h-80 pr-4 -mr-4 mb-4">
             <div className="space-y-4">
                 <AnimatePresence>
                     {messages.map((message, index) => (
@@ -97,13 +133,13 @@ export default function EventAssistant({ eventContext }: EventAssistantProps) {
                         </div>
                         )}
                         <div
-                        className={`max-w-xs rounded-lg px-4 py-2 text-sm ${
+                        className={`max-w-sm rounded-lg px-4 py-2 text-sm ${
                             message.role === 'user'
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-secondary'
                         }`}
                         >
-                        {message.content}
+                          {typeof message.content === 'string' ? message.content : <AssistantMessageContent content={message.content} />}
                         </div>
                         {message.role === 'user' && (
                         <div className="bg-muted p-2 rounded-full text-muted-foreground">
@@ -130,7 +166,7 @@ export default function EventAssistant({ eventContext }: EventAssistantProps) {
                  {messages.length === 0 && (
                     <div className="text-center text-sm text-muted-foreground pt-16">
                         <p>Have a question about this event?</p>
-                        <p>Ask me anything!</p>
+                        <p>Ask me "What is this event about?"</p>
                     </div>
                 )}
             </div>
