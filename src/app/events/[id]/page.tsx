@@ -19,13 +19,14 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
   const [user, setUser] = useState<User | undefined>(getUserById('1'));
   const [isRegistered, setIsRegistered] = useState(false);
   const { toast } = useToast();
+  const { id } = params;
 
   useEffect(() => {
-    const eventData = getEventById(params.id);
+    const eventData = getEventById(id);
     if (eventData) {
       setEvent(eventData);
     }
-  }, [params.id]);
+  }, [id]);
 
   useEffect(() => {
     if (user && event) {
@@ -44,11 +45,11 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
       // Unregister
       updatedUser = {
         ...user,
-        registeredEvents: user.registeredEvents.filter(id => id !== event.id),
+        registeredEvents: user.registeredEvents.filter(eventId => eventId !== event.id),
       };
       updatedEvent = {
         ...event,
-        registrations: event.registrations.filter(id => id !== user.id),
+        registrations: event.registrations.filter(userId => userId !== user.id),
       };
       toastMessage = "You have successfully unregistered from this event.";
     } else {
