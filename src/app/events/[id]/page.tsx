@@ -1,21 +1,21 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { getEventById, getUserById, updateUser, updateEvent, type Event, type User } from '@/lib/data';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, User as UserIcon, Tag, Ticket, CheckCircle } from 'lucide-react';
+import { Calendar, Clock, User as UserIcon, Tag, Ticket, CheckCircle, Link as LinkIcon } from 'lucide-react';
 import EventAssistant from '@/components/event-assistant';
 import { useToast } from '@/components/ui/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = React.use(params);
+export default function EventDetailPage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const [event, setEvent] = useState<Event | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isRegistered, setIsRegistered] = useState(false);
@@ -231,6 +231,14 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                   </>
                 )}
               </Button>
+               {isRegistered && event.meetingLink && (
+                  <Button asChild size="lg" className="w-full mt-2" variant="secondary">
+                     <Link href={event.meetingLink} target="_blank">
+                       <LinkIcon className="mr-2 h-5 w-5" />
+                       Join Meeting
+                     </Link>
+                  </Button>
+              )}
             </CardContent>
           </Card>
           

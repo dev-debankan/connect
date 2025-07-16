@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -8,13 +7,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getUserById, getEventById, type User, type Event as EventType } from "@/lib/data";
+import { getUserById, getEventById, type User, type Event as EventType, updateUser } from "@/lib/data";
 import { useRouter } from "next/navigation";
+import { useToast } from '@/components/ui/use-toast';
 
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [registeredEvents, setRegisteredEvents] = useState<EventType[]>([]);
   const router = useRouter();
+  const { toast } = useToast();
 
   useEffect(() => {
     // This effect now runs on every navigation to the dashboard to get fresh data
@@ -35,6 +36,24 @@ export default function DashboardPage() {
       router.push('/login');
     }
   }, [router]);
+
+  const handleProfileUpdate = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!user) return;
+
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
+
+    const updatedUserData = { ...user, name, email };
+    updateUser(updatedUserData);
+    setUser(updatedUserData);
+
+    toast({
+      title: "Profile Updated",
+      description: "Your profile information has been saved.",
+    });
+  };
 
   if (!user) {
     return (
@@ -96,16 +115,18 @@ export default function DashboardPage() {
               <CardTitle className="font-headline">Profile Information</CardTitle>
               <CardDescription>Update your personal details here.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input id="name" defaultValue={user.name} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" defaultValue={user.email} />
-              </div>
-              <Button>Save Changes</Button>
+            <CardContent>
+              <form onSubmit={handleProfileUpdate} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input id="name" name="name" defaultValue={user.name} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" name="email" type="email" defaultValue={user.email} />
+                </div>
+                <Button type="submit">Save Changes</Button>
+              </form>
             </CardContent>
           </Card>
         </TabsContent>

@@ -234,5 +234,4 @@ export function deleteUser(userId: string): void {
     ...event,
     registrations: event.registrations.filter(id => id !== userId)
   }));
-  writeData('events', events);
-}
+  

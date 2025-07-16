@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState, useEffect } from 'react';
@@ -479,7 +478,7 @@ export default function AdminDashboardPage() {
                           id="time"
                           name="time"
                           type="time"
-                          defaultValue={eventDate ? format(eventDate, 'HH:mm') : ''}
+                          defaultValue={eventDate ? format(new Date(eventDate), 'HH:mm') : ''}
                         />
                     </div>
                   </div>
