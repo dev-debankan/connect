@@ -134,7 +134,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
     <div className="container py-12 md:py-16">
       <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
         <div className="md:col-span-2 space-y-8">
-          <div className="relative w-full h-72 md:h-96 rounded-lg overflow-hidden shadow-lg">
+          <div className="relative w-full h-64 md:h-96 rounded-lg overflow-hidden shadow-lg">
             <Image
               src={event.image}
               alt={event.title}
@@ -145,7 +145,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
           </div>
           <div className="space-y-4">
             <Badge variant="secondary">{event.category}</Badge>
-            <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-tight text-primary">
+            <h1 className="font-headline text-3xl md:text-5xl font-bold tracking-tight text-primary">
               {event.title}
             </h1>
             <p className="text-lg text-muted-foreground">

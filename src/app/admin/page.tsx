@@ -72,67 +72,69 @@ export default function AdminDashboardPage() {
         </TabsList>
         <TabsContent value="events" className="mt-8">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <CardTitle className="font-headline">Event Management</CardTitle>
                 <CardDescription>Create, edit, and track event registrations.</CardDescription>
               </div>
-              <Button onClick={handleCreateEvent}>
+              <Button onClick={handleCreateEvent} className="w-full md:w-auto">
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Create Event
               </Button>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Speaker</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-center">Registrations</TableHead>
-                    <TableHead className="text-center">Meeting Link</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {events.map((event) => (
-                    <TableRow key={event.id}>
-                      <TableCell className="font-medium">{event.title}</TableCell>
-                      <TableCell>{event.speaker}</TableCell>
-                      <TableCell>{format(event.time, 'MMM d, yyyy')}</TableCell>
-                      <TableCell className="text-center">{event.registrations.length}</TableCell>
-                      <TableCell className="text-center">
-                        {event.meetingLink ? <Badge>Set</Badge> : <Badge variant="secondary">Not Set</Badge>}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Open menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleEditEvent(event)}>
-                              <Pencil className="mr-2 h-4 w-4" />
-                              Edit
-                            </DropdownMenuItem>
-                             <DropdownMenuItem>
-                              <UsersIcon className="mr-2 h-4 w-4" />
-                              View Registrations
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive">
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Speaker</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead className="text-center">Registrations</TableHead>
+                      <TableHead className="text-center">Meeting Link</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {events.map((event) => (
+                      <TableRow key={event.id}>
+                        <TableCell className="font-medium whitespace-nowrap">{event.title}</TableCell>
+                        <TableCell className="whitespace-nowrap">{event.speaker}</TableCell>
+                        <TableCell className="whitespace-nowrap">{format(event.time, 'MMM d, yyyy')}</TableCell>
+                        <TableCell className="text-center">{event.registrations.length}</TableCell>
+                        <TableCell className="text-center">
+                          {event.meetingLink ? <Badge>Set</Badge> : <Badge variant="secondary">Not Set</Badge>}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuItem onClick={() => handleEditEvent(event)}>
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Edit
+                              </DropdownMenuItem>
+                               <DropdownMenuItem>
+                                <UsersIcon className="mr-2 h-4 w-4" />
+                                View Registrations
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="text-destructive">
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -143,6 +145,7 @@ export default function AdminDashboardPage() {
               <CardDescription>View and manage all registered users.</CardDescription>
             </CardHeader>
             <CardContent>
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -155,8 +158,8 @@ export default function AdminDashboardPage() {
                 <TableBody>
                   {users.map((user) => (
                     <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.name}</TableCell>
-                      <TableCell>{user.email}</TableCell>
+                      <TableCell className="font-medium whitespace-nowrap">{user.name}</TableCell>
+                      <TableCell className="whitespace-nowrap">{user.email}</TableCell>
                       <TableCell>
                         <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>{user.role}</Badge>
                       </TableCell>
@@ -185,6 +188,7 @@ export default function AdminDashboardPage() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -198,38 +202,38 @@ export default function AdminDashboardPage() {
               {selectedEvent ? 'Update the details for this event.' : 'Fill in the details for the new event.'}
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="title" className="text-right">Title</Label>
-              <Input id="title" defaultValue={selectedEvent?.title} className="col-span-3" />
+          <div className="grid gap-6 py-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
+              <Label htmlFor="title" className="md:text-right">Title</Label>
+              <Input id="title" defaultValue={selectedEvent?.title} className="md:col-span-3" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="speaker" className="text-right">Speaker</Label>
-              <Input id="speaker" defaultValue={selectedEvent?.speaker} className="col-span-3" />
+            <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
+              <Label htmlFor="speaker" className="md:text-right">Speaker</Label>
+              <Input id="speaker" defaultValue={selectedEvent?.speaker} className="md:col-span-3" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="topic" className="text-right">Topic</Label>
-              <Input id="topic" defaultValue={selectedEvent?.topic} className="col-span-3" />
+            <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
+              <Label htmlFor="topic" className="md:text-right">Topic</Label>
+              <Input id="topic" defaultValue={selectedEvent?.topic} className="md:col-span-3" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="description" className="text-right">Description</Label>
-              <Textarea id="description" defaultValue={selectedEvent?.description} className="col-span-3" />
+            <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
+              <Label htmlFor="description" className="md:text-right">Description</Label>
+              <Textarea id="description" defaultValue={selectedEvent?.description} className="md:col-span-3" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="imageUrl" className="text-right">
+            <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
+              <Label htmlFor="imageUrl" className="md:text-right">
                  <div className="flex items-center gap-1">
                   <ImageIcon className="h-3 w-3" /> Image URL
                 </div>
               </Label>
-              <Input id="imageUrl" defaultValue={selectedEvent?.image} className="col-span-3" placeholder="https://placehold.co/600x400.png" />
+              <Input id="imageUrl" defaultValue={selectedEvent?.image} className="md:col-span-3" placeholder="https://placehold.co/600x400.png" />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="meetingLink" className="text-right">
+            <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
+              <Label htmlFor="meetingLink" className="md:text-right">
                 <div className="flex items-center gap-1">
                   <LinkIcon className="h-3 w-3" /> Meeting Link
                 </div>
               </Label>
-              <Input id="meetingLink" defaultValue={selectedEvent?.meetingLink} className="col-span-3" placeholder="https://meet.google.com/..." />
+              <Input id="meetingLink" defaultValue={selectedEvent?.meetingLink} className="md:col-span-3" placeholder="https://meet.google.com/..." />
             </div>
           </div>
           <DialogFooter>
@@ -239,5 +243,3 @@ export default function AdminDashboardPage() {
       </Dialog>
     </div>
   );
-
-    
