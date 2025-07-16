@@ -15,7 +15,7 @@ interface Message {
   content: string;
 }
 
-export default function EventAssistant({ eventDetails }: { eventDetails: string }) {
+export default function EventAssistant() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -27,11 +27,12 @@ export default function EventAssistant({ eventDetails }: { eventDetails: string 
 
     const userMessage: Message = { role: 'user', content: input };
     setMessages((prev) => [...prev, userMessage]);
+    const currentInput = input;
     setInput('');
     setIsLoading(true);
 
     try {
-      const result = await eventAssistant({ eventDetails, userQuery: input });
+      const result = await eventAssistant({ userQuery: currentInput });
       const assistantMessage: Message = { role: 'assistant', content: result.answer };
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
@@ -41,7 +42,7 @@ export default function EventAssistant({ eventDetails }: { eventDetails: string 
         description: "The AI assistant is currently unavailable. Please try again later.",
         variant: "destructive",
       });
-      setMessages(prev => prev.slice(0, -1)); // Remove user message on error
+      setMessages(prev => prev.filter(msg => msg.content !== currentInput)); // Remove user message on error
     } finally {
       setIsLoading(false);
     }
@@ -107,7 +108,7 @@ export default function EventAssistant({ eventDetails }: { eventDetails: string 
                 </AnimatePresence>
                  {messages.length === 0 && (
                     <div className="text-center text-sm text-muted-foreground pt-16">
-                        <p>Have a question about this event?</p>
+                        <p>Have a question about an event?</p>
                         <p>Ask me anything!</p>
                     </div>
                 )}
@@ -117,7 +118,7 @@ export default function EventAssistant({ eventDetails }: { eventDetails: string 
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask about the schedule..."
+              placeholder="Ask about events..."
               disabled={isLoading}
               autoComplete="off"
             />

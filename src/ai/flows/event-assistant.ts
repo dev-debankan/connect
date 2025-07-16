@@ -9,12 +9,10 @@
  */
 
 import {ai} from '@/ai/genkit';
+import { getEvents } from '@/lib/data';
 import {z} from 'genkit';
 
 const EventAssistantInputSchema = z.object({
-  eventDetails: z
-    .string()
-    .describe('The details of the event, including title, speaker, time, and topic.'),
   userQuery: z.string().describe('The user query about the event.'),
 });
 export type EventAssistantInput = z.infer<typeof EventAssistantInputSchema>;
@@ -28,18 +26,37 @@ export async function eventAssistant(input: EventAssistantInput): Promise<EventA
   return eventAssistantFlow(input);
 }
 
+const getEventInformation = ai.defineTool(
+  {
+    name: 'getEventInformation',
+    description: 'Get information about all available tech events. Use this tool to answer any questions about event schedules, topics, speakers, or details.',
+    inputSchema: z.object({
+      title: z.string().optional().describe('The title of a specific event to get information for.'),
+    }),
+    outputSchema: z.any(),
+  },
+  async (input) => {
+    const allEvents = getEvents();
+    if (input.title) {
+      const foundEvent = allEvents.find(e => e.title.toLowerCase().includes(input.title!.toLowerCase()));
+      return foundEvent || `No event found with title containing "${input.title}".`;
+    }
+    return allEvents.map(e => ({ title: e.title, speaker: e.speaker, time: e.time, topic: e.topic }));
+  }
+);
+
+
 const prompt = ai.definePrompt({
   name: 'eventAssistantPrompt',
   input: {schema: EventAssistantInputSchema},
   output: {schema: EventAssistantOutputSchema},
-  prompt: `You are an AI event assistant. You have information about an event.
-  The event details are as follows:
-  {{{eventDetails}}}
-
-  A user has the following query about the event:
-  {{{userQuery}}}
-
-  Answer the user's query based on the event details.`,
+  tools: [getEventInformation],
+  prompt: `You are an AI event assistant for GDG Connect Streamline.
+  Your goal is to answer user questions about tech events.
+  Use the getEventInformation tool to answer the user's query.
+  Be friendly and helpful.
+  
+  User Query: {{{userQuery}}}`,
 });
 
 const eventAssistantFlow = ai.defineFlow(

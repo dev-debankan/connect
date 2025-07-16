@@ -15,14 +15,6 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
     notFound();
   }
 
-  const eventDetailsForAI = `
-    Event Title: ${event.title}
-    Speaker: ${event.speaker}
-    Date and Time: ${format(event.time, 'MMMM d, yyyy p')}
-    Topic: ${event.topic}
-    Description: ${event.description}
-  `;
-
   return (
     <div className="container py-12 md:py-16">
       <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
@@ -87,7 +79,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
             </CardContent>
           </Card>
           
-          <EventAssistant eventDetails={eventDetailsForAI} />
+          <EventAssistant />
 
         </div>
       </div>
