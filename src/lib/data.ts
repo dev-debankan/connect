@@ -103,12 +103,24 @@ let events: Event[] = [
   },
 ];
 
+type NewEventData = Omit<Event, 'id' | 'registrations'>;
+
 export function getEvents(): Event[] {
   return [...events].sort((a, b) => a.time.getTime() - b.time.getTime());
 }
 
 export function getEventById(id: string): Event | undefined {
   return events.find((event) => event.id === id);
+}
+
+export function addEvent(eventData: NewEventData): Event {
+  const newEvent: Event = {
+    ...eventData,
+    id: String(Date.now()), // Simple unique ID generation
+    registrations: [],
+  };
+  events.push(newEvent);
+  return newEvent;
 }
 
 export function updateEvent(updatedEvent: Event): void {

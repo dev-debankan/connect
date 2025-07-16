@@ -2,7 +2,7 @@
 'use client'
 
 import { useState } from 'react';
-import { getEvents, getUsers, type Event, type User, deleteEvent, deleteUser, updateUser } from '@/lib/data';
+import { addEvent, getEvents, getUsers, type Event, type User, deleteEvent, deleteUser, updateUser, updateEvent as updateEventData } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -54,6 +54,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MoreHorizontal, PlusCircle, Users as UsersIcon, Calendar as CalendarIcon, Trash2, Pencil, LinkIcon, ImageIcon } from 'lucide-react';
 import { format } from 'date-fns';
+import { useToast } from '@/components/ui/use-toast';
 
 type DialogContext = 'eventDelete' | 'userDelete' | 'none';
 
@@ -72,6 +73,7 @@ export default function AdminDashboardPage() {
   const [isUserRoleDialogOpen, setIsUserRoleDialogOpen] = useState(false);
   const [selectedUserForRoleChange, setSelectedUserForRoleChange] = useState<User | null>(null);
   const [newRole, setNewRole] = useState<'user' | 'admin'>('user');
+  const { toast } = useToast();
 
 
   const handleCreateEvent = () => {
@@ -100,6 +102,7 @@ export default function AdminDashboardPage() {
       setEvents(getEvents());
       setEventToDelete(null);
       setDialogContext('none');
+      toast({ title: "Success", description: "Event deleted successfully." });
     }
   };
 
@@ -115,6 +118,7 @@ export default function AdminDashboardPage() {
       setEvents(getEvents()); // Refresh events in case registrations changed
       setUserToDelete(null);
       setDialogContext('none');
+      toast({ title: "Success", description: "User deleted successfully." });
     }
   };
 
@@ -135,8 +139,44 @@ export default function AdminDashboardPage() {
       setUsers(getUsers());
       setIsUserRoleDialogOpen(false);
       setSelectedUserForRoleChange(null);
+      toast({ title: "Success", description: "User role updated." });
     }
   };
+  
+  const handleEventSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const eventData = {
+      title: formData.get('title') as string,
+      speaker: formData.get('speaker') as string,
+      topic: formData.get('topic') as string,
+      description: formData.get('description') as string,
+      image: formData.get('imageUrl') as string || 'https://placehold.co/600x400.png',
+      meetingLink: formData.get('meetingLink') as string,
+      // Hard-coding category and time for now as they are not in the form
+      category: 'Webinar' as const, 
+      time: new Date(),
+    };
+
+    if (selectedEvent) {
+      // Update existing event
+      const updatedEvent = {
+        ...selectedEvent,
+        ...eventData
+      };
+      updateEventData(updatedEvent);
+      toast({ title: "Success", description: "Event updated successfully." });
+    } else {
+      // Create new event
+      addEvent(eventData);
+      toast({ title: "Success", description: "Event created successfully." });
+    }
+
+    setEvents(getEvents());
+    setIsEventFormOpen(false);
+    setSelectedEvent(null);
+  };
+
 
   const getRegisteredUsers = (event: Event | null): User[] => {
     if (!event) return [];
@@ -365,51 +405,54 @@ export default function AdminDashboardPage() {
 
 
         <Dialog open={isEventFormOpen} onOpenChange={setIsEventFormOpen}>
-          <DialogContent className="sm:max-w-[600px] grid-rows-[auto_minmax(0,1fr)_auto] max-h-[90svh]">
-            <DialogHeader>
-              <DialogTitle className="font-headline">{selectedEvent ? 'Edit Event' : 'Create New Event'}</DialogTitle>
-              <DialogDescription>
-                {selectedEvent ? 'Update the details for this event.' : 'Fill in the details for the new event.'}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-6 py-4 overflow-y-auto pr-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
-                <Label htmlFor="title" className="md:text-right">Title</Label>
-                <Input id="title" defaultValue={selectedEvent?.title} className="md:col-span-3" />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
-                <Label htmlFor="speaker" className="md:text-right">Speaker</Label>
-                <Input id="speaker" defaultValue={selectedEvent?.speaker} className="md:col-span-3" />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
-                <Label htmlFor="topic" className="md:text-right">Topic</Label>
-                <Input id="topic" defaultValue={selectedEvent?.topic} className="md:col-span-3" />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
-                <Label htmlFor="description" className="md:text-right">Description</Label>
-                <Textarea id="description" defaultValue={selectedEvent?.description} className="md:col-span-3" />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
-                <Label htmlFor="imageUrl" className="md:text-right">
-                   <div className="flex items-center gap-1">
-                    <ImageIcon className="h-3 w-3" /> Image URL
+            <DialogContent className="sm:max-w-[600px] grid-rows-[auto_minmax(0,1fr)_auto] max-h-[90svh]">
+              <DialogHeader>
+                <DialogTitle className="font-headline">{selectedEvent ? 'Edit Event' : 'Create New Event'}</DialogTitle>
+                <DialogDescription>
+                  {selectedEvent ? 'Update the details for this event.' : 'Fill in the details for the new event.'}
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleEventSubmit}>
+                <div className="grid gap-6 py-4 overflow-y-auto pr-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
+                    <Label htmlFor="title" className="md:text-right">Title</Label>
+                    <Input id="title" name="title" defaultValue={selectedEvent?.title} className="md:col-span-3" />
                   </div>
-                </Label>
-                <Input id="imageUrl" defaultValue={selectedEvent?.image} className="md:col-span-3" placeholder="https://placehold.co/600x400.png" />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
-                <Label htmlFor="meetingLink" className="md:text-right">
-                  <div className="flex items-center gap-1">
-                    <LinkIcon className="h-3 w-3" /> Meeting Link
+                  <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
+                    <Label htmlFor="speaker" className="md:text-right">Speaker</Label>
+                    <Input id="speaker" name="speaker" defaultValue={selectedEvent?.speaker} className="md:col-span-3" />
                   </div>
-                </Label>
-                <Input id="meetingLink" defaultValue={selectedEvent?.meetingLink} className="md:col-span-3" placeholder="https://meet.google.com/..." />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="submit">Save changes</Button>
-            </DialogFooter>
-          </DialogContent>
+                  <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
+                    <Label htmlFor="topic" className="md:text-right">Topic</Label>
+                    <Input id="topic" name="topic" defaultValue={selectedEvent?.topic} className="md:col-span-3" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
+                    <Label htmlFor="description" className="md:text-right">Description</Label>
+                    <Textarea id="description" name="description" defaultValue={selectedEvent?.description} className="md:col-span-3" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
+                    <Label htmlFor="imageUrl" className="md:text-right">
+                       <div className="flex items-center gap-1">
+                        <ImageIcon className="h-3 w-3" /> Image URL
+                      </div>
+                    </Label>
+                    <Input id="imageUrl" name="imageUrl" defaultValue={selectedEvent?.image} className="md:col-span-3" placeholder="https://placehold.co/600x400.png" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
+                    <Label htmlFor="meetingLink" className="md:text-right">
+                      <div className="flex items-center gap-1">
+                        <LinkIcon className="h-3 w-3" /> Meeting Link
+                      </div>
+                    </Label>
+                    <Input id="meetingLink" name="meetingLink" defaultValue={selectedEvent?.meetingLink} className="md:col-span-3" placeholder="https://meet.google.com/..." />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setIsEventFormOpen(false)}>Cancel</Button>
+                  <Button type="submit">Save changes</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
         </Dialog>
         
         <Dialog open={isUserRoleDialogOpen} onOpenChange={setIsUserRoleDialogOpen}>
@@ -447,5 +490,3 @@ export default function AdminDashboardPage() {
     </AlertDialog>
   );
 }
-
-    
