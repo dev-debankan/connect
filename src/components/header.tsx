@@ -161,7 +161,7 @@ export default function Header() {
         </div>
         {/* DEV ONLY: Mock auth controls */}
         {!isLoggedIn && process.env.NODE_ENV === 'development' && (
-          <div className="pl-4 hidden lg:block">
+          <div className="pl-4">
             <Button size="sm" variant="outline" onClick={() => handleLogin()}>
               Login as User
             </Button>
