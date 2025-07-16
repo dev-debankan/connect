@@ -433,15 +433,15 @@ export default function AdminDashboardPage() {
 
 
         <Dialog open={isEventFormOpen} onOpenChange={setIsEventFormOpen}>
-            <DialogContent className="sm:max-w-[600px] grid-rows-[auto_minmax(0,1fr)_auto] max-h-[90svh]">
-              <DialogHeader>
+            <DialogContent className="sm:max-w-[600px] grid-rows-[auto_minmax(0,1fr)_auto] max-h-[90svh] flex flex-col">
+              <DialogHeader className="flex-shrink-0">
                 <DialogTitle className="font-headline">{selectedEvent ? 'Edit Event' : 'Create New Event'}</DialogTitle>
                 <DialogDescription>
                   {selectedEvent ? 'Update the details for this event.' : 'Fill in the details for the new event.'}
                 </DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleEventSubmit}>
-                <div className="grid gap-6 py-4 overflow-y-auto pr-6">
+              <form onSubmit={handleEventSubmit} className="flex-grow overflow-hidden flex flex-col">
+                <div className="grid gap-6 py-4 overflow-y-auto pr-6 flex-grow">
                   <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
                     <Label htmlFor="title" className="md:text-right">Title</Label>
                     <Input id="title" name="title" defaultValue={selectedEvent?.title} className="md:col-span-3" />
@@ -508,7 +508,7 @@ export default function AdminDashboardPage() {
                     <Input id="meetingLink" name="meetingLink" defaultValue={selectedEvent?.meetingLink} className="md:col-span-3" placeholder="https://meet.google.com/..." />
                   </div>
                 </div>
-                <DialogFooter>
+                <DialogFooter className="flex-shrink-0">
                   <Button type="button" variant="outline" onClick={() => setIsEventFormOpen(false)}>Cancel</Button>
                   <Button type="submit">Save changes</Button>
                 </DialogFooter>
@@ -551,5 +551,3 @@ export default function AdminDashboardPage() {
     </AlertDialog>
   );
 }
-
-    
