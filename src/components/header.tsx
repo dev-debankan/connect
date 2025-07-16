@@ -116,10 +116,10 @@ export default function Header() {
             </Button>
           ) : (
             <>
-              <Link href="/login" passHref asChild>
+              <Link href="/login" asChild>
                 <Button variant="ghost">Login</Button>
               </Link>
-              <Link href="/signup" passHref asChild>
+              <Link href="/signup" asChild>
                 <Button>Sign Up</Button>
               </Link>
             </>
