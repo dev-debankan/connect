@@ -34,10 +34,10 @@ const prompt = ai.definePrompt({
   output: {schema: EventAssistantOutputSchema},
   prompt: `You are an AI event assistant. You have information about an event.
   The event details are as follows:
-  {{eventDetails}}
+  {{{eventDetails}}}
 
   A user has the following query about the event:
-  {{userQuery}}
+  {{{userQuery}}}
 
   Answer the user's query based on the event details.`,
 });
