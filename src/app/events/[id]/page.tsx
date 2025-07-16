@@ -145,7 +145,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
             </CardContent>
           </Card>
           
-          <EventAssistant />
+          <EventAssistant eventContext={event} />
 
         </div>
       </div>

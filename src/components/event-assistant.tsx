@@ -3,17 +3,22 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { eventAssistant } from '@/ai/flows/event-assistant';
+import { eventAssistant, type EventAssistantInput } from '@/ai/flows/event-assistant';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Bot, Send, User, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from './ui/use-toast';
+import type { Event } from '@/lib/data';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+}
+
+interface EventAssistantProps {
+  eventContext?: Event;
 }
 
 const GeminiLogo = () => (
@@ -27,7 +32,7 @@ const GeminiLogo = () => (
     </svg>
   );
 
-export default function EventAssistant() {
+export default function EventAssistant({ eventContext }: EventAssistantProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -44,7 +49,11 @@ export default function EventAssistant() {
     setIsLoading(true);
 
     try {
-      const result = await eventAssistant({ userQuery: currentInput });
+      const assistantInput: EventAssistantInput = { userQuery: currentInput };
+      if (eventContext) {
+        assistantInput.eventContext = eventContext;
+      }
+      const result = await eventAssistant(assistantInput);
       const assistantMessage: Message = { role: 'assistant', content: result.answer };
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
@@ -120,7 +129,7 @@ export default function EventAssistant() {
                 </AnimatePresence>
                  {messages.length === 0 && (
                     <div className="text-center text-sm text-muted-foreground pt-16">
-                        <p>Have a question about an event?</p>
+                        <p>Have a question about this event?</p>
                         <p>Ask me anything!</p>
                     </div>
                 )}
@@ -130,7 +139,7 @@ export default function EventAssistant() {
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask about events..."
+              placeholder="Ask about this event..."
               disabled={isLoading}
               autoComplete="off"
             />

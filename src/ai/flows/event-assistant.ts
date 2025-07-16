@@ -9,11 +9,12 @@
  */
 
 import {ai} from '@/ai/genkit';
-import { getEvents } from '@/lib/data';
+import { getEvents, type Event } from '@/lib/data';
 import {z} from 'genkit';
 
 const EventAssistantInputSchema = z.object({
   userQuery: z.string().describe('The user query about the event.'),
+  eventContext: z.any().optional().describe('The context of the specific event the user is currently viewing. This will be a JSON object with event details.'),
 });
 export type EventAssistantInput = z.infer<typeof EventAssistantInputSchema>;
 
@@ -29,7 +30,7 @@ export async function eventAssistant(input: EventAssistantInput): Promise<EventA
 const getEventInformation = ai.defineTool(
   {
     name: 'getEventInformation',
-    description: 'Get information about all available tech events. Use this tool to answer any questions about event schedules, topics, speakers, or details.',
+    description: 'Get information about all available tech events. Use this tool to answer any questions about event schedules, topics, speakers, or details, especially if the user asks about an event other than the one they are currently viewing.',
     inputSchema: z.object({
       title: z.string().optional().describe('The title of a specific event to get information for.'),
     }),
@@ -60,10 +61,20 @@ const prompt = ai.definePrompt({
   output: {schema: EventAssistantOutputSchema},
   tools: [getEventInformation],
   prompt: `You are a friendly and helpful AI event assistant for GDG Connect Streamline.
-  Your goal is to answer user questions about tech events based on the information provided by the getEventInformation tool.
-  When a user asks a question (e.g., "who is the speaker for the Next.js event?", "what is the description of the AI with Gemini workshop?", "When is the event on Firebase?"), use the tool to find the relevant event details and formulate a clear and concise answer.
-  If the user asks a general question, you can list the available events.
+  Your goal is to answer user questions about tech events.
+
+  {{#if eventContext}}
+  The user is currently viewing the following event. Prioritize answering questions about this event unless the user asks about a different one.
+  Event Context:
+  \`\`\`json
+  {{{jsonStringify eventContext}}}
+  \`\`\`
+  {{/if}}
   
+  When a user asks a question, first check if it can be answered using the provided Event Context. If they ask about a different event or a general question (e.g., "list all events"), use the getEventInformation tool to find the relevant event details.
+  
+  Formulate a clear and concise answer based on the available information.
+
   User Query: {{{userQuery}}}`,
 });
 
