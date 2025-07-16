@@ -1,4 +1,4 @@
-import { subDays, addDays, addHours } from 'date-fns';
+import { subDays, addDays } from 'date-fns';
 
 export type Event = {
   id: string;
@@ -21,6 +21,9 @@ export type User = {
   registeredEvents: string[];
 };
 
+// Static date reference to ensure consistency across server and client renders
+const staticDate = new Date('2024-07-20T12:00:00Z');
+
 let users: User[] = [
   { id: '1', name: 'Alice Johnson', email: 'alice@example.com', role: 'user', registeredEvents: ['1', '3'] },
   { id: '2', name: 'Bob Williams', email: 'bob@example.com', role: 'user', registeredEvents: ['2'] },
@@ -33,7 +36,7 @@ let events: Event[] = [
     id: '1',
     title: 'Next.js 15 Deep Dive',
     speaker: 'Jane Doe',
-    time: addDays(new Date(), 7),
+    time: addDays(staticDate, 7),
     topic: 'Web Development',
     description: 'Explore the new features of Next.js 15, including React 19 support, new APIs, and performance improvements. This session is for intermediate to advanced developers.',
     registrations: ['1', '3'],
@@ -45,7 +48,7 @@ let events: Event[] = [
     id: '2',
     title: 'AI with Gemini and Genkit',
     speaker: 'John Smith',
-    time: addDays(new Date(), 14),
+    time: addDays(staticDate, 14),
     topic: 'Artificial Intelligence',
     description: 'A comprehensive workshop on building generative AI applications using Google\'s Gemini models and the Genkit framework. Perfect for developers looking to get into AI.',
     registrations: ['2', '3'],
@@ -56,7 +59,7 @@ let events: Event[] = [
     id: '3',
     title: 'Mastering Firebase for Modern Apps',
     speaker: 'Emily White',
-    time: addDays(new Date(), 21),
+    time: addDays(staticDate, 21),
     topic: 'Cloud & Firebase',
     description: 'Learn how to leverage Firebase to build scalable, secure, and real-time applications. We will cover Firestore, Authentication, and Cloud Functions.',
     registrations: ['1', '3'],
@@ -67,7 +70,7 @@ let events: Event[] = [
     id: '4',
     title: 'UI/UX Design Principles',
     speaker: 'Michael Green',
-    time: subDays(new Date(), 5),
+    time: subDays(staticDate, 5),
     topic: 'Design',
     description: 'A look back at our popular session on fundamental UI/UX design principles that lead to great user experiences. This is a recording of the live event.',
     registrations: [],
@@ -79,7 +82,7 @@ let events: Event[] = [
     id: '5',
     title: 'Advanced State Management in React',
     speaker: 'Sarah Lee',
-    time: addDays(new Date(), 30),
+    time: addDays(staticDate, 30),
     topic: 'Web Development',
     description: 'Tired of prop drilling? This webinar explores advanced state management techniques in React using libraries like Zustand, Jotai, and the Context API.',
     registrations: [],
@@ -90,7 +93,7 @@ let events: Event[] = [
     id: '6',
     title: 'Introduction to Go for Beginners',
     speaker: 'Chris Rodriguez',
-    time: addDays(new Date(), 45),
+    time: addDays(staticDate, 45),
     topic: 'Backend Development',
     description: 'Get started with the Go programming language. This workshop covers syntax, concurrency, and building a simple web server.',
     registrations: [],
