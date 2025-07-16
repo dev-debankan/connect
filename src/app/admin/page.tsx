@@ -365,14 +365,14 @@ export default function AdminDashboardPage() {
 
 
         <Dialog open={isEventFormOpen} onOpenChange={setIsEventFormOpen}>
-          <DialogContent className="sm:max-w-[600px]">
+          <DialogContent className="sm:max-w-[600px] grid-rows-[auto_minmax(0,1fr)_auto] max-h-[90svh]">
             <DialogHeader>
               <DialogTitle className="font-headline">{selectedEvent ? 'Edit Event' : 'Create New Event'}</DialogTitle>
               <DialogDescription>
                 {selectedEvent ? 'Update the details for this event.' : 'Fill in the details for the new event.'}
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-6 py-4">
+            <div className="grid gap-6 py-4 overflow-y-auto pr-6">
               <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
                 <Label htmlFor="title" className="md:text-right">Title</Label>
                 <Input id="title" defaultValue={selectedEvent?.title} className="md:col-span-3" />
@@ -447,3 +447,5 @@ export default function AdminDashboardPage() {
     </AlertDialog>
   );
 }
+
+    
