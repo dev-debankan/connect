@@ -87,8 +87,16 @@ export default function EventDetailPage({ params: { id } }: { params: { id: stri
 
     updateUser(updatedUser);
     updateEvent(updatedEvent);
+    
+    // Persist the change in localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('loggedInUser', JSON.stringify({ id: updatedUser.id, role: updatedUser.role }));
+    }
+
+    // Update the state to reflect the change immediately
     setUser(updatedUser);
     setEvent(updatedEvent);
+
 
     toast({
       title: "Success",
