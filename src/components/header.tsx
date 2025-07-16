@@ -102,7 +102,7 @@ export default function Header() {
         </div>
 
 
-        <div className="flex items-center justify-end space-x-2">
+        <div className="flex items-center justify-end space-x-2 flex-1 md:flex-none">
           {isLoggedIn ? (
             <Button onClick={handleLogout} variant="secondary">
               Logout
@@ -119,6 +119,21 @@ export default function Header() {
               </div>
             </>
           )}
+
+          {/* DEV ONLY: Mock auth controls */}
+          {!isLoggedIn && process.env.NODE_ENV === 'development' && (
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" onClick={() => handleLogin()}>
+                <span className="hidden md:inline">Login as User</span>
+                <span className="md:hidden">User</span>
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => handleLogin(true)}>
+                 <span className="hidden md:inline">Login as Admin</span>
+                 <span className="md:hidden">Admin</span>
+              </Button>
+            </div>
+          )}
+
            <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
@@ -159,17 +174,6 @@ export default function Header() {
             </Sheet>
           </div>
         </div>
-        {/* DEV ONLY: Mock auth controls */}
-        {!isLoggedIn && process.env.NODE_ENV === 'development' && (
-          <div className="pl-4">
-            <Button size="sm" variant="outline" onClick={() => handleLogin()}>
-              Login as User
-            </Button>
-            <Button size="sm" variant="outline" className="ml-2" onClick={() => handleLogin(true)}>
-              Login as Admin
-            </Button>
-          </div>
-        )}
       </div>
     </header>
   );
