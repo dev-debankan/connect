@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -52,16 +53,16 @@ export default function Header() {
           return null;
         }
         return (
-          <Link key={link.href} href={link.href} legacyBehavior passHref>
-            <a
-              className={cn(
-                'transition-colors hover:text-primary',
-                isActive ? 'text-primary font-semibold' : 'text-muted-foreground',
-                isMobile ? 'text-lg font-medium' : 'text-sm font-medium'
-              )}
-            >
-              {link.label}
-            </a>
+          <Link
+            key={link.href}
+            href={link.href}
+            className={cn(
+              'transition-colors hover:text-primary',
+              isActive ? 'text-primary font-semibold' : 'text-muted-foreground',
+              isMobile ? 'text-lg font-medium' : 'text-sm font-medium'
+            )}
+          >
+            {link.label}
           </Link>
         );
       })}
@@ -115,10 +116,10 @@ export default function Header() {
             </Button>
           ) : (
             <>
-              <Link href="/login" passHref legacyBehavior>
+              <Link href="/login" passHref asChild>
                 <Button variant="ghost">Login</Button>
               </Link>
-              <Link href="/signup" passHref legacyBehavior>
+              <Link href="/signup" passHref asChild>
                 <Button>Sign Up</Button>
               </Link>
             </>

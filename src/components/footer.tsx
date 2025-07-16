@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import { Users, Twitter, Linkedin, Github } from "lucide-react";
 
@@ -12,23 +13,17 @@ export default function Footer() {
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <Link href="#" target="_blank" rel="noreferrer">
-            <div className="rounded-lg p-2 transition-colors hover:bg-secondary">
+          <Link href="#" target="_blank" rel="noreferrer" className="rounded-lg p-2 transition-colors hover:bg-secondary">
               <Twitter className="h-5 w-5 text-muted-foreground" />
               <span className="sr-only">Twitter</span>
-            </div>
           </Link>
-          <Link href="#" target="_blank" rel="noreferrer">
-             <div className="rounded-lg p-2 transition-colors hover:bg-secondary">
+          <Link href="#" target="_blank" rel="noreferrer" className="rounded-lg p-2 transition-colors hover:bg-secondary">
               <Github className="h-5 w-5 text-muted-foreground" />
               <span className="sr-only">Github</span>
-            </div>
           </Link>
-          <Link href="#" target="_blank" rel="noreferrer">
-             <div className="rounded-lg p-2 transition-colors hover:bg-secondary">
+          <Link href="#" target="_blank" rel="noreferrer" className="rounded-lg p-2 transition-colors hover:bg-secondary">
               <Linkedin className="h-5 w-5 text-muted-foreground" />
               <span className="sr-only">LinkedIn</span>
-            </div>
           </Link>
         </div>
       </div>
