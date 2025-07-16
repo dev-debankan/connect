@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useState } from 'react';
@@ -32,7 +33,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MoreHorizontal, PlusCircle, Users as UsersIcon, Calendar as CalendarIcon, Trash2, Pencil, LinkIcon } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Users as UsersIcon, Calendar as CalendarIcon, Trash2, Pencil, LinkIcon, ImageIcon } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function AdminDashboardPage() {
@@ -215,6 +216,14 @@ export default function AdminDashboardPage() {
               <Textarea id="description" defaultValue={selectedEvent?.description} className="col-span-3" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="imageUrl" className="text-right">
+                 <div className="flex items-center gap-1">
+                  <ImageIcon className="h-3 w-3" /> Image URL
+                </div>
+              </Label>
+              <Input id="imageUrl" defaultValue={selectedEvent?.image} className="col-span-3" placeholder="https://placehold.co/600x400.png" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="meetingLink" className="text-right">
                 <div className="flex items-center gap-1">
                   <LinkIcon className="h-3 w-3" /> Meeting Link
@@ -230,4 +239,5 @@ export default function AdminDashboardPage() {
       </Dialog>
     </div>
   );
-}
+
+    
