@@ -9,13 +9,13 @@ import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, User as UserIcon, Tag, Ticket, CheckCircle, Loader2 } from 'lucide-react';
+import { Calendar, Clock, User as UserIcon, Tag, Ticket, CheckCircle } from 'lucide-react';
 import EventAssistant from '@/components/event-assistant';
 import { useToast } from '@/components/ui/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = React.use(params);
+export default function EventDetailPage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const [event, setEvent] = useState<Event | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isRegistered, setIsRegistered] = useState(false);
@@ -24,21 +24,24 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   const router = useRouter();
 
   useEffect(() => {
+    const eventData = getEventById(id);
+    if (eventData) {
+      setEvent(eventData);
+    }
+    
     const storedUser = localStorage.getItem('loggedInUser');
     if (storedUser) {
       setIsLoggedIn(true);
       const { id: userId } = JSON.parse(storedUser);
-      setUser(getUserById(userId) || null);
+      const currentUser = getUserById(userId);
+      setUser(currentUser || null);
+
+      if (currentUser && eventData) {
+        setIsRegistered(currentUser.registeredEvents.includes(eventData.id));
+      }
     } else {
       setIsLoggedIn(false);
       setUser(null);
-    }
-  }, []);
-
-  useEffect(() => {
-    const eventData = getEventById(id);
-    if (eventData) {
-      setEvent(eventData);
     }
   }, [id]);
 
@@ -52,6 +55,11 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
   const handleRegister = () => {
     if (!isLoggedIn) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to register for events.",
+        variant: "destructive"
+      });
       router.push('/login');
       return;
     }
@@ -59,52 +67,44 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     if (!user || !event) return;
 
     let updatedUser: User;
-    let updatedEvent: Event;
     let toastMessage: string;
 
     if (isRegistered) {
-      // Unregister
       updatedUser = {
         ...user,
         registeredEvents: user.registeredEvents.filter(eventId => eventId !== event.id),
       };
-      updatedEvent = {
-        ...event,
-        registrations: event.registrations.filter(userId => userId !== user.id),
-      };
       toastMessage = "You have successfully unregistered from this event.";
     } else {
-      // Register
       updatedUser = {
         ...user,
         registeredEvents: [...user.registeredEvents, event.id],
-      };
-      updatedEvent = {
-        ...event,
-        registrations: [...event.registrations, user.id],
       };
       toastMessage = "You have successfully registered for this event!";
     }
 
     updateUser(updatedUser);
-    updateEvent(updatedEvent);
-    
-    // Persist the change in localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('loggedInUser', JSON.stringify({ id: updatedUser.id, role: updatedUser.role }));
+
+    const updatedEventData = getEventById(event.id);
+    if(updatedEventData) {
+        if(isRegistered) {
+            updatedEventData.registrations = updatedEventData.registrations.filter(uid => uid !== user.id);
+        } else {
+            updatedEventData.registrations.push(user.id);
+        }
+        updateEvent(updatedEventData);
+        setEvent(updatedEventData);
     }
-
-    // Update the state to reflect the change immediately
+    
     setUser(updatedUser);
-    setEvent(updatedEvent);
-
+    setIsRegistered(!isRegistered);
 
     toast({
       title: "Success",
       description: toastMessage,
     });
   };
-
+  
   if (!event) {
      return (
        <div className="container py-12 md:py-16">
@@ -158,6 +158,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
        </div>
      );
   }
+  
+  const eventTime = new Date(event.time);
 
   return (
     <div className="container py-12 md:py-16">
@@ -199,14 +201,14 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                 <Calendar className="h-5 w-5 mt-0.5 text-primary" />
                 <div>
                   <h3 className="font-semibold">Date</h3>
-                  <p className="text-muted-foreground">{format(event.time, 'EEEE, MMMM d, yyyy')}</p>
+                  <p className="text-muted-foreground">{format(eventTime, 'EEEE, MMMM d, yyyy')}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Clock className="h-5 w-5 mt-0.5 text-primary" />
                 <div>
                   <h3 className="font-semibold">Time</h3>
-                  <p className="text-muted-foreground">{format(event.time, 'p')}</p>
+                  <p className="text-muted-foreground">{format(eventTime, 'p')}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -217,22 +219,15 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                 </div>
               </div>
               <Button size="lg" className="w-full mt-4" onClick={handleRegister}>
-                {isLoggedIn ? (
-                  isRegistered ? (
-                    <>
-                      <CheckCircle className="mr-2 h-5 w-5" />
-                      You are registered
-                    </>
-                  ) : (
-                     <>
-                      <Ticket className="mr-2 h-5 w-5" />
-                      Register for this Event
-                    </>
-                  )
-                ) : (
+                {isRegistered ? (
                   <>
+                    <CheckCircle className="mr-2 h-5 w-5" />
+                    You are registered
+                  </>
+                ) : (
+                   <>
                     <Ticket className="mr-2 h-5 w-5" />
-                    Login to Register
+                    Register for this Event
                   </>
                 )}
               </Button>

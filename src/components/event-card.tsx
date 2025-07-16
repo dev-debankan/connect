@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { format } from 'date-fns';
@@ -12,6 +13,7 @@ interface EventCardProps {
 }
 
 export function EventCard({ event }: EventCardProps) {
+  const eventTime = new Date(event.time);
   return (
     <Card className="flex h-full flex-col overflow-hidden transition-shadow hover:shadow-lg">
       <CardHeader className="p-0">
@@ -41,11 +43,11 @@ export function EventCard({ event }: EventCardProps) {
           </div>
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            <span>{format(event.time, 'MMMM d, yyyy')}</span>
+            <span>{format(eventTime, 'MMMM d, yyyy')}</span>
           </div>
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
-            <span>{format(event.time, 'p')}</span>
+            <span>{format(eventTime, 'p')}</span>
           </div>
         </div>
       </CardContent>

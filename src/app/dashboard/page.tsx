@@ -17,16 +17,18 @@ export default function DashboardPage() {
   const router = useRouter();
 
   useEffect(() => {
+    // This effect now runs on every navigation to the dashboard to get fresh data
     const storedUser = localStorage.getItem('loggedInUser');
     if (storedUser) {
       const { id } = JSON.parse(storedUser);
       const userData = getUserById(id);
       if (userData) {
         setUser(userData);
-        const events = userData.registeredEvents.map(eventId => getEventById(eventId)).filter(Boolean) as EventType[];
+        const events = userData.registeredEvents
+          .map(eventId => getEventById(eventId))
+          .filter(Boolean) as EventType[];
         setRegisteredEvents(events);
       } else {
-        // User not found, redirect to login
         router.push('/login');
       }
     } else {
@@ -43,8 +45,8 @@ export default function DashboardPage() {
   }
 
   const now = new Date();
-  const upcomingRegisteredEvents = registeredEvents.filter(event => event.time >= now);
-  const pastRegisteredEvents = registeredEvents.filter(event => event.time < now);
+  const upcomingRegisteredEvents = registeredEvents.filter(event => new Date(event.time) >= now);
+  const pastRegisteredEvents = registeredEvents.filter(event => new Date(event.time) < now);
 
   return (
     <div className="container py-12 md:py-16">

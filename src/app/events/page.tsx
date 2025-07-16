@@ -1,12 +1,28 @@
+
+'use client';
+
+import { useEffect, useState } from 'react';
 import { EventCard } from "@/components/event-card";
 import { getEvents } from "@/lib/data";
 import { Separator } from "@/components/ui/separator";
+import type { Event } from '@/lib/data';
 
 export default function EventsPage() {
-  const allEvents = getEvents();
+  const [allEvents, setAllEvents] = useState<Event[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setAllEvents(getEvents());
+    setIsLoading(false);
+  }, []);
+
   const now = new Date();
-  const upcomingEvents = allEvents.filter(event => event.time >= now);
-  const pastEvents = allEvents.filter(event => event.time < now).reverse();
+  const upcomingEvents = allEvents.filter(event => new Date(event.time) >= now);
+  const pastEvents = allEvents.filter(event => new Date(event.time) < now).reverse();
+
+  if (isLoading) {
+    return <div className="container py-12 md:py-16 text-center">Loading events...</div>;
+  }
 
   return (
     <div className="container py-12 md:py-16">

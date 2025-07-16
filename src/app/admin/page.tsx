@@ -1,7 +1,7 @@
 
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { addEvent, getEvents, getUsers, type Event, type User, deleteEvent, deleteUser, updateUser, updateEvent as updateEventData } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -59,8 +59,8 @@ import { useToast } from '@/components/ui/use-toast';
 type DialogContext = 'eventDelete' | 'userDelete' | 'none';
 
 export default function AdminDashboardPage() {
-  const [events, setEvents] = useState<Event[]>(getEvents());
-  const [users, setUsers] = useState<User[]>(getUsers());
+  const [events, setEvents] = useState<Event[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [isEventFormOpen, setIsEventFormOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [eventToView, setEventToView] = useState<Event | null>(null);
@@ -75,6 +75,14 @@ export default function AdminDashboardPage() {
   const [newRole, setNewRole] = useState<'user' | 'admin'>('user');
   const { toast } = useToast();
 
+  useEffect(() => {
+    refreshData();
+  }, []);
+
+  const refreshData = () => {
+    setEvents(getEvents());
+    setUsers(getUsers());
+  };
 
   const handleCreateEvent = () => {
     setSelectedEvent(null);
@@ -99,7 +107,7 @@ export default function AdminDashboardPage() {
   const handleConfirmEventDelete = () => {
     if (eventToDelete) {
       deleteEvent(eventToDelete.id);
-      setEvents(getEvents());
+      refreshData();
       setEventToDelete(null);
       setDialogContext('none');
       toast({ title: "Success", description: "Event deleted successfully." });
@@ -114,8 +122,7 @@ export default function AdminDashboardPage() {
   const handleConfirmUserDelete = () => {
     if (userToDelete) {
       deleteUser(userToDelete.id);
-      setUsers(getUsers());
-      setEvents(getEvents()); // Refresh events in case registrations changed
+      refreshData();
       setUserToDelete(null);
       setDialogContext('none');
       toast({ title: "Success", description: "User deleted successfully." });
@@ -136,7 +143,7 @@ export default function AdminDashboardPage() {
     if (selectedUserForRoleChange) {
       const updatedUser = { ...selectedUserForRoleChange, role: newRole };
       updateUser(updatedUser);
-      setUsers(getUsers());
+      refreshData();
       setIsUserRoleDialogOpen(false);
       setSelectedUserForRoleChange(null);
       toast({ title: "Success", description: "User role updated." });
@@ -153,13 +160,11 @@ export default function AdminDashboardPage() {
       description: formData.get('description') as string,
       image: formData.get('imageUrl') as string || 'https://placehold.co/600x400.png',
       meetingLink: formData.get('meetingLink') as string,
-      // Hard-coding category and time for now as they are not in the form
       category: 'Webinar' as const, 
       time: new Date(),
     };
 
     if (selectedEvent) {
-      // Update existing event
       const updatedEvent = {
         ...selectedEvent,
         ...eventData
@@ -167,12 +172,11 @@ export default function AdminDashboardPage() {
       updateEventData(updatedEvent);
       toast({ title: "Success", description: "Event updated successfully." });
     } else {
-      // Create new event
       addEvent(eventData);
       toast({ title: "Success", description: "Event created successfully." });
     }
 
-    setEvents(getEvents());
+    refreshData();
     setIsEventFormOpen(false);
     setSelectedEvent(null);
   };
@@ -233,7 +237,7 @@ export default function AdminDashboardPage() {
                         <TableRow key={event.id}>
                           <TableCell className="font-medium whitespace-nowrap">{event.title}</TableCell>
                           <TableCell className="whitespace-nowrap">{event.speaker}</TableCell>
-                          <TableCell className="whitespace-nowrap">{format(event.time, 'MMM d, yyyy')}</TableCell>
+                          <TableCell className="whitespace-nowrap">{format(new Date(event.time), 'MMM d, yyyy')}</TableCell>
                           <TableCell className="text-center">{event.registrations.length}</TableCell>
                           <TableCell className="text-center">
                             {event.meetingLink ? <Badge>Set</Badge> : <Badge variant="secondary">Not Set</Badge>}

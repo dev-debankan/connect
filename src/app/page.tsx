@@ -1,12 +1,27 @@
 
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { EventCard } from '@/components/event-card';
 import { getEvents } from '@/lib/data';
-import { ArrowRight, Calendar, Users } from 'lucide-react';
+import { ArrowRight, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import type { Event } from '@/lib/data';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 
 export default function Home() {
-  const upcomingEvents = getEvents();
+  const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const allEvents = getEvents();
+    const now = new Date();
+    const futureEvents = allEvents.filter(event => new Date(event.time) >= now);
+    setUpcomingEvents(futureEvents);
+    setIsLoading(false);
+  }, []);
 
   return (
     <div className="flex flex-col">
@@ -55,9 +70,31 @@ export default function Home() {
             </div>
           </div>
           <div className="mx-auto grid grid-cols-1 gap-8 py-12 sm:grid-cols-2 md:grid-cols-3 lg:gap-12">
-            {upcomingEvents.slice(0, 3).map((event) => (
-              <EventCard key={event.id} event={event} />
-            ))}
+            {isLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                 <Card key={i} className="flex h-full flex-col">
+                  <CardHeader className="p-0">
+                    <Skeleton className="h-48 w-full" />
+                  </CardHeader>
+                  <CardContent className="flex-grow p-6">
+                    <Skeleton className="h-4 w-1/4 mb-2" />
+                    <Skeleton className="h-6 w-3/4 mb-4" />
+                    <div className="space-y-3">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-full" />
+                       <Skeleton className="h-4 w-1/2" />
+                    </div>
+                  </CardContent>
+                  <CardFooter className="p-6 pt-0">
+                     <Skeleton className="h-10 w-full" />
+                  </CardFooter>
+                </Card>
+              ))
+            ) : (
+              upcomingEvents.slice(0, 3).map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))
+            )}
           </div>
            <div className="flex justify-center">
              <Link href="/events">
