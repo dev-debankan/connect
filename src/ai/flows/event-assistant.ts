@@ -40,7 +40,7 @@ const getEventInformation = ai.defineTool(
     outputSchema: z.any(),
   },
   async (input) => {
-    const allEvents = getEvents();
+    const allEvents = await getEvents();
     if (input.title) {
       const foundEvent = allEvents.find(e => e.title.toLowerCase().includes(input.title!.toLowerCase()));
       return foundEvent || `No event found with title containing "${input.title}".`;
@@ -67,17 +67,23 @@ const prompt = ai.definePrompt({
 
 IMPORTANT: Your response MUST be based on the provided event information. Do not use general knowledge.
 
-1.  **Analyze the User's Query**: Understand what the user is asking. Are they asking a general question ("tell me more"), a specific question ("what skills will I learn?"), or a question about a different event?
+1.  **Analyze the User's Query**: Understand what the user is asking.
+    *   If the user asks "Who is the speaker?", answer with just the speaker's name.
+    *   If the user asks "What is the time?", answer with just the event time.
+    *   If the user asks "What is the topic?", answer with just the event topic.
+    *   If the query is more general (like "tell me about this event" or asks about skills/benefits), provide a comprehensive response.
 
 2.  **Use the Right Information Source**:
     *   **If 'eventContext' is provided, use it as your primary source.** This is the event the user is currently looking at.
     *   **If 'eventContext' is NOT provided, or the user asks about a different event, use the 'getEventInformation' tool** to find the relevant details.
 
-3.  **Generate a Comprehensive Response**: Based on the event information you have, generate a response that fills all the fields in the output schema.
-    *   **answer**: Provide a direct, conversational answer to the user's specific query. If the query is general (like "tell me about this event"), give a concise summary.
-    *   **benefits**: Analyze the event description and summarize the key benefits for an attendee.
-    *   **skillsLearned**: From the description, extract a list of specific skills that will be taught.
-    *   **prerequisites**: From the description, identify and summarize any prerequisites. If none are mentioned, explicitly state that it's open to all levels.
+3.  **Generate a Response**:
+    *   For specific questions (speaker, time, topic), provide a direct, concise answer in the 'answer' field.
+    *   For general questions, generate a response that fills all the fields in the output schema.
+        *   **answer**: Provide a direct, conversational summary of the event.
+        *   **benefits**: Analyze the event description and summarize the key benefits for an attendee.
+        *   **skillsLearned**: From the description, extract a list of specific skills that will be taught.
+        *   **prerequisites**: From the description, identify and summarize any prerequisites. If none are mentioned, explicitly state that it's open to all levels.
 
 **User's Current Event Context (if available):**
 {{#if eventContext}}
