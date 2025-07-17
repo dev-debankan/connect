@@ -96,6 +96,7 @@ export default function EventAssistant({ eventContext }: EventAssistantProps) {
           description: eventContext.description,
           speaker: eventContext.speaker,
           topic: eventContext.topic,
+          time: eventContext.time.toISOString(),
           category: eventContext.category
         });
       }
