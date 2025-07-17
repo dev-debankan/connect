@@ -68,18 +68,19 @@ const prompt = ai.definePrompt({
 IMPORTANT: Your response MUST be based on the provided event information. Do not use general knowledge.
 
 1.  **Analyze the User's Query**: Understand what the user is asking.
-    *   If the user asks "Who is the speaker?", answer with a sentence like "The speaker for this event is [Speaker's Name]."
-    *   If the user asks "What is the time?", answer with a sentence like "The event is scheduled for [Event Time]."
-    *   If the user asks "What is the topic?", answer with a sentence like "The topic of this event is [Event Topic]."
-    *   If the query is more general (like "tell me about this event" or asks about skills/benefits), provide a comprehensive response by filling out all the fields in the output schema.
+    *   If the user asks "Who is the speaker?", "What is the time?", or "What is the topic?", you MUST ONLY provide a single, direct, conversational sentence in the 'answer' field and leave all other fields in the output schema empty.
+        *   Example for "Who is the speaker?": "The speaker for this event is [Speaker's Name]."
+        *   Example for "What is the time?": "The event is scheduled for [Event Time]."
+        *   Example for "What is the topic?": "The topic of this event is [Event Topic]."
+    *   If the query is more general (like "tell me about this event" or asks about skills/benefits), then and ONLY then should you provide a comprehensive response by filling out all the fields in the output schema.
 
 2.  **Use the Right Information Source**:
     *   **If 'eventContext' is provided, use it as your primary source.** This is the event the user is currently looking at.
     *   **If 'eventContext' is NOT provided, or the user asks about a different event, use the 'getEventInformation' tool** to find the relevant details.
 
 3.  **Generate a Response**:
-    *   For specific questions (speaker, time, topic), provide a direct, conversational, full-sentence answer in the 'answer' field.
-    *   For general questions, generate a response that fills all the fields in the output schema.
+    *   **For specific questions (speaker, time, topic):** Provide a direct, conversational, full-sentence answer in the 'answer' field. DO NOT fill out any other fields.
+    *   **For general questions:** Generate a response that fills all the relevant fields in the output schema.
         *   **answer**: Provide a direct, conversational summary of the event.
         *   **benefits**: Analyze the event description and summarize the key benefits for an attendee.
         *   **skillsLearned**: From the description, extract a list of specific skills that will be taught.
