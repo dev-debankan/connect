@@ -12,6 +12,7 @@ import { Bot, Send, User, Loader2, Sparkles, Lightbulb, BookCheck } from 'lucide
 import { useToast } from './ui/use-toast';
 import type { Event } from '@/lib/data';
 import { Badge } from './ui/badge';
+import { format } from 'date-fns';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -96,7 +97,7 @@ export default function EventAssistant({ eventContext }: EventAssistantProps) {
           description: eventContext.description,
           speaker: eventContext.speaker,
           topic: eventContext.topic,
-          time: eventContext.time.toISOString(),
+          time: format(new Date(eventContext.time), "EEEE, MMMM d, yyyy 'at' p"),
           category: eventContext.category
         });
       }
