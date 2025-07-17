@@ -67,7 +67,12 @@ const prompt = ai.definePrompt({
 
 IMPORTANT: Your response MUST be based on the provided event information. Do not use general knowledge.
 
-1.  **Analyze the User's Query**: Understand what the user is asking.
+0.  **Handle Greetings and Thanks**: First, check if the user is just saying hello or thanks.
+    *   If the user's query is a simple greeting like "hello" or "hi", respond with a friendly greeting like "Hello! How can I help you with this event?" and nothing else.
+    *   If the user's query is a simple thanks like "thank you" or "thanks", respond politely with "You're welcome!" or "Glad I could help!" and nothing else.
+    *   For these simple cases, ONLY provide the 'answer' and leave all other fields in the output schema empty.
+
+1.  **Analyze the User's Query**: If it's not a simple greeting, understand what the user is asking about the event.
     *   If the user asks "Who is the speaker?", "What is the time?", or "What is the topic?", you MUST ONLY provide a single, direct, conversational sentence in the 'answer' field and leave all other fields in the output schema empty.
         *   Example for "Who is the speaker?": "The speaker for this event is [Speaker's Name]."
         *   Example for "What is the time?": "The event is scheduled for [Event Time]."
