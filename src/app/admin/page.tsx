@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { addEvent, getEvents, getUsers, type Event, type User, deleteEvent, deleteUser, updateUser, updateEvent as updateEventData } from '@/lib/data';
+import { generateEventImage } from '@/ai/flows/generate-event-image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -56,7 +57,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MoreHorizontal, PlusCircle, Users as UsersIcon, Calendar as CalendarIcon, Trash2, Pencil, LinkIcon, ImageIcon, ClockIcon } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Users as UsersIcon, Calendar as CalendarIcon, Trash2, Pencil, LinkIcon, ImageIcon, ClockIcon, Sparkles, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/components/ui/use-toast';
 import { Calendar } from '@/components/ui/calendar';
@@ -80,6 +81,9 @@ export default function AdminDashboardPage() {
   const [isUserRoleDialogOpen, setIsUserRoleDialogOpen] = useState(false);
   const [selectedUserForRoleChange, setSelectedUserForRoleChange] = useState<User | null>(null);
   const [newRole, setNewRole] = useState<'user' | 'admin'>('user');
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const eventFormRef = useRef<HTMLFormElement>(null);
+
   const { toast } = useToast();
 
   useEffect(() => {
@@ -208,6 +212,45 @@ export default function AdminDashboardPage() {
   const getRegisteredUsers = (event: Event | null): User[] => {
     if (!event) return [];
     return getUsers().filter(user => event.registrations.includes(user.id));
+  };
+  
+  const handleGenerateImage = async () => {
+    if (!eventFormRef.current) return;
+    const formData = new FormData(eventFormRef.current);
+    const title = formData.get('title') as string;
+    const topic = formData.get('topic') as string;
+
+    const prompt = title || topic;
+    if (!prompt) {
+      toast({
+        title: "Cannot Generate Image",
+        description: "Please enter a title or topic for the event first.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsGeneratingImage(true);
+    try {
+      const result = await generateEventImage({ prompt: `tech event banner for ${prompt}` });
+      const imageUrlInput = eventFormRef.current.elements.namedItem('imageUrl') as HTMLInputElement;
+      if (imageUrlInput) {
+        imageUrlInput.value = result.imageDataUri;
+      }
+      toast({
+        title: "Image Generated",
+        description: "The event image has been successfully generated and added.",
+      });
+    } catch (error) {
+      console.error("Image generation failed:", error);
+      toast({
+        title: "Image Generation Failed",
+        description: "There was an error generating the image. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingImage(false);
+    }
   };
 
 
@@ -439,7 +482,7 @@ export default function AdminDashboardPage() {
                   {selectedEvent ? 'Update the details for this event.' : 'Fill in the details for the new event.'}
                 </DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleEventSubmit} className="flex-grow overflow-hidden flex flex-col">
+              <form ref={eventFormRef} onSubmit={handleEventSubmit} className="flex-grow overflow-hidden flex flex-col">
                 <div className="grid gap-6 py-4 overflow-y-auto pr-6 flex-grow">
                   <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
                     <Label htmlFor="title" className="md:text-right">Title</Label>
@@ -490,13 +533,23 @@ export default function AdminDashboardPage() {
                     <Label htmlFor="description" className="md:text-right">Description</Label>
                     <Textarea id="description" name="description" defaultValue={selectedEvent?.description} className="md:col-span-3" />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
-                    <Label htmlFor="imageUrl" className="md:text-right">
+                   <div className="grid grid-cols-1 md:grid-cols-4 items-start gap-2 md:gap-4">
+                    <Label htmlFor="imageUrl" className="md:text-right pt-2">
                        <div className="flex items-center gap-1">
                         <ImageIcon className="h-3 w-3" /> Image URL
                       </div>
                     </Label>
-                    <Input id="imageUrl" name="imageUrl" defaultValue={selectedEvent?.image} className="md:col-span-3" placeholder="https://placehold.co/600x400.png" />
+                    <div className="md:col-span-3 space-y-2">
+                      <Input id="imageUrl" name="imageUrl" defaultValue={selectedEvent?.image} placeholder="Paste URL or generate one" />
+                       <Button type="button" variant="secondary" onClick={handleGenerateImage} disabled={isGeneratingImage}>
+                        {isGeneratingImage ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Sparkles className="mr-2 h-4 w-4" />
+                        )}
+                        Generate Image
+                      </Button>
+                    </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-4 items-start md:items-center gap-2 md:gap-4">
                     <Label htmlFor="meetingLink" className="md:text-right">
