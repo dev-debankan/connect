@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An AI flow to generate an image for an event.
@@ -46,3 +47,4 @@ const generateEventImageFlow = ai.defineFlow(
     return { imageDataUri: media.url };
   }
 );
+
