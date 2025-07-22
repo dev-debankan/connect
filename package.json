@@ -4,7 +4,7 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/dev-debankan/GDG-CONNECT.git"
+    "url": "git@github.com:dev-debankan/GDG-CONNECT.git"
   },
   "scripts": {
     "dev": "next dev --turbopack -p 9002",
