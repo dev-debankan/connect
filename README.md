@@ -1,6 +1,5 @@
 
-# Firebase Studio
+# GDG_CONNECT
 
-This is a NextJS starter in Firebase Studio.
+This is a NextJS event publisher app where admin can genearte custom events 
 
-To get started, take a look at src/app/page.tsx.
